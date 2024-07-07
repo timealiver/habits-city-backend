@@ -8,7 +8,7 @@ app.use("/auth",authRouter);
 app.use(express.json())
 const start = async () => {
 try {
-    await mongoose.connect(`mongodb+srv://timealive:qwerty123@habits-1.kykynam.mongodb.net/?retryWrites=true&w=majority&appName=Habits-1`);
+    await mongoose.connect(`mongodb+srv://timealive:qwerty123@habits-1.kykynam.mongodb.net/auth_roles?retryWrites=true&w=majority&appName=Habits-1`);
     app.listen(PORT,()=> console.log(`Server started on port ${PORT}`))
 } catch (e) {
     console.log(e);
