@@ -1,0 +1,20 @@
+{
+  "name": "habits-city-backend",
+  "version": "1.0.0",
+  "description": "backend-services for habits-city",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "habits-city-backend"
+  },
+  "author": "Timur",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "mongoose": "^8.4.5",
+    "nodemon": "^3.1.4"
+  }
+}
