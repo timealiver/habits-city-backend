@@ -17,7 +17,7 @@ router.post(
       'password',
       'Пароль должен содержать хотя бы одну заглавную букву',
     ).matches(/[A-Z]/),
-    check('phone', 'Номер указан неверно').isMobilePhone('ru-RU'),
+    // check('phone', 'Номер указан неверно').isMobilePhone('ru-RU'),
   ],
   controller.registration,
 );
