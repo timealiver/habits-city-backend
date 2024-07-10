@@ -17,10 +17,14 @@ router.post(
       'password',
       'Пароль должен содержать хотя бы одну заглавную букву',
     ).matches(/[A-Z]/),
+<<<<<<< HEAD
     check('phone')
       .optional()
       .isMobilePhone('ru-RU')
       .withMessage('Номер указан неверно'),
+=======
+    // check('phone', 'Номер указан неверно').isMobilePhone('ru-RU'),
+>>>>>>> e93947b7fc55681e9b44756223251133049786cc
   ],
   controller.registration,
 );
