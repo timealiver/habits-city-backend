@@ -24,10 +24,12 @@ class authController {
 
       console.log(username, password, phone);
       const candidate = await User.findOne({
-        $or: [{ username }, { phone }],
+        $or: [{ username }, { phone: { $exists: true } }],
       });
+      console.log(candidate);
       if (candidate) {
         let message = '';
+
         if (candidate.username === username) {
           message += 'Пользователь с таким именем уже существует';
         } else if (candidate.phone === phone && phone != null) {
