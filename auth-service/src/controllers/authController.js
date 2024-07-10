@@ -1,7 +1,16 @@
 const User = require('../models/User.js');
 const Role = require('../models/Role.js');
 const bcrypt = require('bcryptjs');
-const { validationResult, check } = require('express-validator');
+const jwt = require('jsonwebtoken');
+const { validationResult } = require('express-validator');
+const { secret } = require('../config/config.js');
+const generateAccessToken = (id) => {
+  const payload = {
+    id,
+  };
+  return jwt.sign(payload, secret, { expiresIn: '48h' });
+};
+
 class authController {
   async registration(req, res) {
     try {
@@ -46,6 +55,30 @@ class authController {
   }
   async login(req, res) {
     try {
+      const { username, password, phone } = req.body;
+      if (username != null) {
+        const user = await User.findOne({ username });
+        if (!user) {
+          return res
+            .status(400)
+            .json({ message: `Пользователь ${username} не найден` });
+        }
+        const validPassword = bcrypt.compareSync(password, user.password);
+        if (!validPassword) {
+          return res.status(400).json({ message: 'Введен неверный пароль' });
+        }
+        const token = generateAccessToken(user._id);
+        return res.json({ token });
+      } else if (phone != null) {
+        return res.status(200).json({
+          message:
+            'Вероятно, это запрос для регистрации через SMS. Реализация будет позже!',
+        });
+      } else {
+        return res
+          .status(200)
+          .json({ message: 'Не введен ни логин, ни номер' });
+      }
     } catch (e) {}
   }
   async getUsers(req, res) {
