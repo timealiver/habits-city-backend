@@ -9,7 +9,7 @@ const app = express()
 
 app.use(
 	cors({
-		origin: 'http://localhost:3000', // разрешить запросы с домена http://localhost:3000
+		origin: ['http://localhost:3000', 'https://habits-city-frontend-ozv8jn2ma-molsrgs-projects.vercel.app'],
 	})
 )
 

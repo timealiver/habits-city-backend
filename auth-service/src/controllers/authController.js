@@ -30,7 +30,7 @@ class authController {
         let message = '';
         if (candidate.username === username) {
           message += 'Пользователь с таким именем уже существует';
-        } else if (candidate.phone === phone && phone != null) {
+        } else if (candidate.phone === phone) {
           message += 'Пользователь с таким номером телефона уже существует';
           console.log(candidate);
         }
