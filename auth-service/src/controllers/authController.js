@@ -4,6 +4,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const { secret } = require('../config/config.js');
+const RefreshToken = require('../models/RefreshToken.js');
+
 const generateAccessToken = (id) => {
   const payload = {
     id,
@@ -11,6 +13,12 @@ const generateAccessToken = (id) => {
   return jwt.sign(payload, secret, { expiresIn: '48h' });
 };
 
+const generateRefreshToken = (id) => {
+  const payload = {
+    id,
+  };
+  return jwt.sign(payload, secret, { expiresIn: '30d' });
+};
 class authController {
   async registration(req, res) {
     try {
@@ -22,11 +30,9 @@ class authController {
       }
       const { username, password, phone } = req.body;
 
-      console.log(username, password, phone);
       const candidate = await User.findOne({
         $or: [{ username }, { phone: { $exists: true } }],
       });
-      console.log(candidate);
       if (candidate) {
         let message = '';
 
@@ -47,9 +53,22 @@ class authController {
         roles: [userRole.value],
       });
       await user.save();
-      return res
-        .status(200)
-        .json({ message: 'Пользователь успешно зарегистрирован' });
+      const AccessToken = generateAccessToken(user._id);
+      const RefrToken = generateRefreshToken(user._id);
+
+      const refToken = new RefreshToken({
+        userId: user._id,
+        token: RefrToken,
+        createdAt: new Date(Date.now()),
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      });
+
+      await refToken.save();
+      return res.status(200).json({
+        message: 'Пользователь успешно зарегистрирован',
+        AccessToken: AccessToken,
+        RefreshToken: RefrToken,
+      });
     } catch (e) {
       console.log(e);
       res.status(400).json(e);
@@ -69,8 +88,19 @@ class authController {
         if (!validPassword) {
           return res.status(400).json({ message: 'Введен неверный пароль' });
         }
-        const token = generateAccessToken(user._id);
-        return res.json({ token });
+        const AccToken = generateAccessToken(user._id);
+        const RefrToken = generateAccessToken(user._id);
+        await RefreshToken.deleteMany({
+          userId: user._id,
+        });
+        const refToken = new RefreshToken({
+          userId: user._id,
+          token: RefrToken,
+          createdAt: new Date(Date.now()),
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        });
+        await refToken.save();
+        return res.json({ AccessToken: AccToken, RefreshToken: RefrToken });
       } else if (phone != null) {
         return res.status(200).json({
           message:
