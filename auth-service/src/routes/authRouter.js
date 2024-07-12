@@ -24,7 +24,7 @@ router.post(
   ],
   controller.registration,
 );
-router.post('/login', controller.login, controller.login);
-router.get('/users', controller.getUsers);
+router.post('/login', controller.login);
+router.post('/sms_auth', controller.smsAuth);
 
 module.exports = router;
