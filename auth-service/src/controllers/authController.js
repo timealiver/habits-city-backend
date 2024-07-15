@@ -66,13 +66,15 @@ class authController {
       });
       console.log(candidate);
       if (candidate) {
-        let message = '';
         if (candidate.username === username) {
-          message += 'Пользователь с таким именем уже существует';
+          return res
+            .status(400)
+            .json({ message: 'Пользователь с таким именем уже существует' });
         } else if (candidate.phone === phone) {
-          message += 'Пользователь с таким номером телефона уже существует';
+          return res.status(400).json({
+            message: 'Пользователь с таким номером телефона уже существует',
+          });
         }
-        return res.status(400).json({ message: message });
       }
       const hashPassword = bcrypt.hashSync(password, 7);
       const userRole = await Role.findOne({ value: 'USER' });
