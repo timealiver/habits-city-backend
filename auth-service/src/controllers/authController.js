@@ -64,7 +64,6 @@ class authController {
       const candidate = await User.findOne({
         $or: [{ username }, { phone: { $ne: null } }],
       });
-      console.log(candidate);
       if (candidate) {
         if (candidate.username === username) {
           return res
@@ -85,6 +84,7 @@ class authController {
         roles: [userRole.value],
       });
       await user.save();
+      console.log(user);
       const AccessToken = generateAccessToken(user._id);
       const RefrToken = generateRefreshToken(user._id);
 
@@ -96,6 +96,10 @@ class authController {
       });
 
       await refToken.save();
+      res.cookie('refresh_token', RefrToken, {
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
       return res.status(200).json({
         message: 'Пользователь успешно зарегистрирован',
         AccessToken: AccessToken,
@@ -198,6 +202,10 @@ class authController {
       });
       await refToken.save();
       await AuthCode.deleteMany({ userId: user._id });
+      res.cookie('refresh_token', RefrToken, {
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
       return res
         .status(200)
         .json({ AccessToken: AccToken, RefreshToken: RefrToken });
