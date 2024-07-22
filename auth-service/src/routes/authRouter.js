@@ -3,6 +3,7 @@ const router = new Router();
 const { check } = require('express-validator');
 
 const controller = require('../controllers/authController.js');
+const oAuthController = require('../controllers/oauthController.js');
 router.post(
   '/registration',
   [
@@ -26,5 +27,7 @@ router.post(
 );
 router.post('/login', controller.login);
 router.post('/sms_auth', controller.smsAuth);
+router.get('/google', oAuthController.googleAuth);
+router.get('/yandex', oAuthController.yandexAuth);
 
 module.exports = router;

@@ -6,9 +6,14 @@ const { validationResult } = require('express-validator');
 const { secret, SMS_MAIL, SMS_API } = require('../config/config.js');
 const RefreshToken = require('../models/RefreshToken.js');
 const AuthCode = require('../models/AuthCode.js');
-const axios = require('axios');
 const { SmsAero, SmsAeroError, SmsAeroHTTPError } = require('smsaero');
 
+const generateJwtToken = (id, expiresIn) => {
+  const payload = {
+    id,
+  };
+  return jwt.sign(payload, secret, { expiresIn: expiresIn });
+};
 const generateAccessToken = (id) => {
   const payload = {
     id,
@@ -85,8 +90,8 @@ class authController {
       });
       await user.save();
       console.log(user);
-      const AccessToken = generateAccessToken(user._id);
-      const RefrToken = generateRefreshToken(user._id);
+      const AccessToken = generateJwtToken(user._id, '48h');
+      const RefrToken = generateRefreshToken(user._id, '30d');
 
       const refToken = new RefreshToken({
         userId: user._id,
@@ -189,8 +194,8 @@ class authController {
       if (!(code_saved.code === code)) {
         return res.status(400).json({ message: 'Код введен неверно' });
       }
-      const AccToken = generateAccessToken(user._id);
-      const RefrToken = generateAccessToken(user._id);
+      const AccToken = generateJwtToken(user._id, '48h');
+      const RefrToken = generateAccessToken(user._id, '30d');
       await RefreshToken.deleteMany({
         userId: user._id,
       });
