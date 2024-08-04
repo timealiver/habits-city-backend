@@ -108,7 +108,6 @@ class authController {
       return res.status(200).json({
         message: 'Пользователь успешно зарегистрирован',
         AccessToken: AccessToken,
-        RefreshToken: RefrToken,
       });
     } catch (e) {
       console.log(e);
@@ -195,7 +194,7 @@ class authController {
         return res.status(400).json({ message: 'Код введен неверно' });
       }
       const AccToken = generateJwtToken(user._id, '48h');
-      const RefrToken = generateAccessToken(user._id, '30d');
+      const RefrToken = generateJwtToken(user._id, '30d');
       await RefreshToken.deleteMany({
         userId: user._id,
       });
@@ -211,9 +210,7 @@ class authController {
         httpOnly: true,
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-      return res
-        .status(200)
-        .json({ AccessToken: AccToken, RefreshToken: RefrToken });
+      return res.status(200).json({ AccessToken: AccToken });
     } catch (error) {
       return res.status(400).json(error);
     }
