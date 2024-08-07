@@ -14,19 +14,7 @@ const generateJwtToken = (id, expiresIn) => {
   };
   return jwt.sign(payload, secret, { expiresIn: expiresIn });
 };
-const generateAccessToken = (id) => {
-  const payload = {
-    id,
-  };
-  return jwt.sign(payload, secret, { expiresIn: '48h' });
-};
 
-const generateRefreshToken = (id) => {
-  const payload = {
-    id,
-  };
-  return jwt.sign(payload, secret, { expiresIn: '30d' });
-};
 const generateAuthCode = () => {
   const codeLength = 6;
   const possibleChars = '0123456789';
@@ -91,13 +79,13 @@ class authController {
       await user.save();
       console.log(user);
       const AccessToken = generateJwtToken(user._id, '48h');
-      const RefrToken = generateRefreshToken(user._id, '30d');
+      const RefrToken = generateJwtToken(user._id, '30d');
 
       const refToken = new RefreshToken({
         userId: user._id,
         token: RefrToken,
         createdAt: new Date(Date.now()),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       });
 
       await refToken.save();
@@ -128,8 +116,8 @@ class authController {
         if (!validPassword) {
           return res.status(400).json({ message: 'Введен неверный пароль' });
         }
-        const AccToken = generateAccessToken(user._id);
-        const RefrToken = generateRefreshToken(user._id);
+        const AccToken = generateJwtToken(user._id, '48h');
+        const RefrToken = generateJwtToken(user._id, '30d');
         await RefreshToken.deleteMany({
           userId: user._id,
         });
@@ -137,7 +125,7 @@ class authController {
           userId: user._id,
           token: RefrToken,
           createdAt: new Date(Date.now()),
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         });
         await refToken.save();
         return res.json({ AccessToken: AccToken, RefreshToken: RefrToken });
@@ -202,7 +190,7 @@ class authController {
         userId: user._id,
         token: RefrToken,
         createdAt: new Date(Date.now()),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       });
       await refToken.save();
       await AuthCode.deleteMany({ userId: user._id });

@@ -76,13 +76,13 @@ class oauthController {
         userId: user._id,
         token: RefrToken,
         createdAt: new Date(Date.now()),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       });
 
       await refToken.save();
       res.cookie('refresh_token', RefrToken, {
         httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 30 * 24 * 60 * 60 * 1000,
       });
       return res.status(200).json({
         message: 'Пользователь успешно авторизован/зарегистрирован',
@@ -129,13 +129,13 @@ class oauthController {
         userId: user._id,
         token: RefrToken,
         createdAt: new Date(Date.now()),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       });
 
       await refToken.save();
       res.cookie('refresh_token', RefrToken, {
         httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 30 * 24 * 60 * 60 * 1000,
       });
       return res.status(200).json({
         message: 'Пользователь успешно авторизован/зарегистрирован',
