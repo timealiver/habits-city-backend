@@ -1,23 +1,14 @@
 const User = require('../models/User.js');
-const RefreshToken = require('../models/RefreshToken.js');
 const Role = require('../models/Role.js');
-const jwt = require('jsonwebtoken');
 const {
-  secret,
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
   GOOGLE_REDIRECT_URI,
   GOOGLE_TOKEN_URL,
 } = require('../config/config.js');
 const qs = require('querystring');
+const { createTokens } = require('../utils/createTokens.js');
 const axios = require('axios');
-
-const generateJwtToken = (id, expiresIn) => {
-  const payload = {
-    id,
-  };
-  return jwt.sign(payload, secret, { expiresIn: expiresIn });
-};
 class oauthController {
   async googleAuth(req, res) {
     try {
@@ -66,24 +57,7 @@ class oauthController {
         });
         user.save();
       }
-      await RefreshToken.deleteMany({
-        userId: user._id,
-      });
-      const AccessToken = generateJwtToken(user._id, '48h');
-      const RefrToken = generateJwtToken(user._id, '30d');
-
-      const refToken = new RefreshToken({
-        userId: user._id,
-        token: RefrToken,
-        createdAt: new Date(Date.now()),
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      });
-
-      await refToken.save();
-      res.cookie('refresh_token', RefrToken, {
-        httpOnly: true,
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      });
+      const AccessToken = await createTokens(user_id, res);
       return res.status(200).json({
         message: 'Пользователь успешно авторизован/зарегистрирован',
         AccessToken: AccessToken,
@@ -119,24 +93,7 @@ class oauthController {
         });
         user.save();
       }
-      await RefreshToken.deleteMany({
-        userId: user._id,
-      });
-      const AccessToken = generateJwtToken(user._id, '48h');
-      const RefrToken = generateJwtToken(user._id, '30d');
-
-      const refToken = new RefreshToken({
-        userId: user._id,
-        token: RefrToken,
-        createdAt: new Date(Date.now()),
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      });
-
-      await refToken.save();
-      res.cookie('refresh_token', RefrToken, {
-        httpOnly: true,
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      });
+      const AccessToken = createTokens(user._id, res);
       return res.status(200).json({
         message: 'Пользователь успешно авторизован/зарегистрирован',
         AccessToken: AccessToken,

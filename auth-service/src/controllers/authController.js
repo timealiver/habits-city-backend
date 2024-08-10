@@ -1,19 +1,11 @@
 const User = require('../models/User.js');
 const Role = require('../models/Role.js');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
-const { secret, SMS_MAIL, SMS_API } = require('../config/config.js');
-const RefreshToken = require('../models/RefreshToken.js');
+const { SMS_MAIL, SMS_API } = require('../config/config.js');
 const AuthCode = require('../models/AuthCode.js');
+const { createTokens } = require('../utils/createTokens.js');
 const { SmsAero, SmsAeroError, SmsAeroHTTPError } = require('smsaero');
-
-const generateJwtToken = (id, expiresIn) => {
-  const payload = {
-    id,
-  };
-  return jwt.sign(payload, secret, { expiresIn: expiresIn });
-};
 
 const generateAuthCode = () => {
   const codeLength = 6;
@@ -78,21 +70,7 @@ class authController {
       });
       await user.save();
       console.log(user);
-      const AccessToken = generateJwtToken(user._id, '48h');
-      const RefrToken = generateJwtToken(user._id, '30d');
-
-      const refToken = new RefreshToken({
-        userId: user._id,
-        token: RefrToken,
-        createdAt: new Date(Date.now()),
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      });
-
-      await refToken.save();
-      res.cookie('refresh_token', RefrToken, {
-        httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
+      const AccessToken = await createTokens(user._id, res);
       return res.status(200).json({
         message: 'Пользователь успешно зарегистрирован',
         AccessToken: AccessToken,
@@ -116,19 +94,8 @@ class authController {
         if (!validPassword) {
           return res.status(400).json({ message: 'Введен неверный пароль' });
         }
-        const AccToken = generateJwtToken(user._id, '48h');
-        const RefrToken = generateJwtToken(user._id, '30d');
-        await RefreshToken.deleteMany({
-          userId: user._id,
-        });
-        const refToken = new RefreshToken({
-          userId: user._id,
-          token: RefrToken,
-          createdAt: new Date(Date.now()),
-          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        });
-        await refToken.save();
-        return res.json({ AccessToken: AccToken, RefreshToken: RefrToken });
+        const AccessToken = await createTokens(user._id, res);
+        return res.status(200).json({ AccessToken: AccessToken });
       } else if (phone != null) {
         const user = await User.findOne({ phone });
         if (!user) {
@@ -154,7 +121,7 @@ class authController {
           .json({ message: 'Не введен ни логин, ни номер' });
       }
     } catch (error) {
-      return res.status(400).json(error);
+      return res.status(400).json(error.toString());
     }
   }
   async smsAuth(req, res) {
@@ -181,24 +148,9 @@ class authController {
       if (!(code_saved.code === code)) {
         return res.status(400).json({ message: 'Код введен неверно' });
       }
-      const AccToken = generateJwtToken(user._id, '48h');
-      const RefrToken = generateJwtToken(user._id, '30d');
-      await RefreshToken.deleteMany({
-        userId: user._id,
-      });
-      const refToken = new RefreshToken({
-        userId: user._id,
-        token: RefrToken,
-        createdAt: new Date(Date.now()),
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      });
-      await refToken.save();
+      const AccessToken = await createTokens(user._id, res);
       await AuthCode.deleteMany({ userId: user._id });
-      res.cookie('refresh_token', RefrToken, {
-        httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-      return res.status(200).json({ AccessToken: AccToken });
+      return res.status(200).json({ AccessToken: AccessToken });
     } catch (error) {
       return res.status(400).json(error);
     }

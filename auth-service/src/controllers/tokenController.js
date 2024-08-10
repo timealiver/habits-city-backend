@@ -2,13 +2,7 @@ const jwt = require('jsonwebtoken');
 const { secret } = require('../config/config');
 const RefreshToken = require('../models/RefreshToken');
 const User = require('../models/User');
-
-const generateJwtToken = (id, expiresIn) => {
-  const payload = {
-    id,
-  };
-  return jwt.sign(payload, secret, { expiresIn: expiresIn });
-};
+const { createTokens } = require('../utils/createTokens.js');
 class tokenController {
   async updateToken(req, res) {
     try {
@@ -30,22 +24,7 @@ class tokenController {
           .status(400)
           .json({ message: 'Токен не найден в базе данных' });
       }
-      await RefreshToken.deleteMany({ userId: payload.id });
-      const AccessToken = generateJwtToken(payload.id, '48h');
-      const RefrToken = generateJwtToken(payload.id, '30d');
-
-      const refToken = new RefreshToken({
-        userId: payload.id,
-        token: RefrToken,
-        createdAt: new Date(Date.now()),
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      });
-
-      await refToken.save();
-      res.cookie('refresh_token', RefrToken, {
-        httpOnly: true,
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      });
+      const AccessToken = await createTokens(payload.id, res);
       return res.status(200).json({
         message: 'Токен успешно обновлен',
         AccessToken: AccessToken,
