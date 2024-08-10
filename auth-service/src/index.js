@@ -11,7 +11,8 @@ app.use(
   cors({
     origin: [
       'http://localhost:3000',
-      'https://habits-city-frontend.vercel.app'
+      'https://habits-city-frontend.vercel.app', 
+      'https://molsrg-habits-city-frontend-ab3a.twc1.net'
     ],
   }),
 );
