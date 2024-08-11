@@ -80,12 +80,12 @@ class oauthController {
           },
         },
       );
+      const { id: yandexId, default_email } = user_info.data;
       console.log(user_info.data);
-      const { id: yandexId, email } = user_info.data;
       var user = await User.findOne({ yandexId });
       const userRole = await Role.findOne({ value: 'USER' });
       if (!user) {
-        var isEmail = await User.findOne({ email });
+        var isEmail = await User.findOne({ email: default_email });
         if (isEmail) {
           return res.status(400).json({
             message: 'Пользователь с такой почтой уже зарегистрирован',
@@ -94,19 +94,24 @@ class oauthController {
         user = new User({
           roles: [userRole.value],
           isOauth: true,
-          email,
+          email: default_email,
           yandexId,
         });
         user.save();
+        const AccessToken = await createTokens(user._id, res);
+        return res.status(200).json({
+          message: 'Пользователь успешно зарегистрирован',
+          AccessToken: AccessToken,
+        });
       }
       const AccessToken = await createTokens(user._id, res);
       return res.status(200).json({
-        message: 'Пользователь успешно авторизован/зарегистрирован',
+        message: 'Пользователь успешно авторизован',
         AccessToken: AccessToken,
       });
     } catch (error) {
       console.log(error);
-      return res.status(400).json(error);
+      return res.status(400).json(error.toString());
     }
   }
 }
