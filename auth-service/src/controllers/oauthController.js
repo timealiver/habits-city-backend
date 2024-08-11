@@ -57,7 +57,7 @@ class oauthController {
         });
         user.save();
       }
-      const AccessToken = await createTokens(user_id, res);
+      const AccessToken = await createTokens(user._id, res);
       return res.status(200).json({
         message: 'Пользователь успешно авторизован/зарегистрирован',
         AccessToken: AccessToken,
@@ -71,7 +71,7 @@ class oauthController {
   }
   async yandexAuth(req, res) {
     try {
-      const yandex_token = req.query.access_token;
+      const yandex_token = req.query.code;
       const user_info = await axios.get(
         'https://login.yandex.ru/info?format=json',
         {
@@ -85,6 +85,12 @@ class oauthController {
       var user = await User.findOne({ yandexId });
       const userRole = await Role.findOne({ value: 'USER' });
       if (!user) {
+        var isEmail = await User.findOne({ email });
+        if (isEmail) {
+          return res.status(400).json({
+            message: 'Пользователь с такой почтой уже зарегистрирован',
+          });
+        }
         user = new User({
           roles: [userRole.value],
           isOauth: true,
@@ -93,14 +99,14 @@ class oauthController {
         });
         user.save();
       }
-      const AccessToken = createTokens(user._id, res);
+      const AccessToken = await createTokens(user._id, res);
       return res.status(200).json({
         message: 'Пользователь успешно авторизован/зарегистрирован',
         AccessToken: AccessToken,
       });
     } catch (error) {
       console.log(error);
-      res.status(400).json(error);
+      return res.status(400).json(error);
     }
   }
 }
