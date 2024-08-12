@@ -6,14 +6,14 @@ const cookieParser = require('cookie-parser');
 const PORT = process.env.PORT || 5000;
 
 const app = express();
-
 app.use(
   cors({
     origin: [
       'http://localhost:3000',
-      'https://habits-city-frontend.vercel.app', 
-      'https://molsrg-habits-city-frontend-ab3a.twc1.net'
+      'https://habits-city-frontend.vercel.app',
+      'https://molsrg-habits-city-frontend-ab3a.twc1.net',
     ],
+    credentials: true,
   }),
 );
 

@@ -1,12 +1,6 @@
 const RefreshToken = require('../models/RefreshToken');
 const { secret } = require('../config/config');
 const jwt = require('jsonwebtoken');
-const generateJwtToken = (id, expiresIn) => {
-  const payload = {
-    id,
-  };
-  return jwt.sign(payload, secret, { expiresIn: expiresIn });
-};
 module.exports.createTokens = async function (userId, res) {
   const AccessToken = jwt.sign({ userId }, secret, { expiresIn: '48h' });
   const RefrToken = jwt.sign({ userId }, secret, { expiresIn: '30d' });
