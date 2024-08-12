@@ -5,7 +5,7 @@ class userController {
       const user = await User.findById('66b898984336bf34f30bddd5');
 
       return res.status(200).json({
-        username: user.username,
+        username: 'TimurGranatovich',
         email: user.email,
         isOnline: true,
         avatar: 'https://avatars.githubusercontent.com/u/739984?v=4',
