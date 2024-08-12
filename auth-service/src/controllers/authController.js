@@ -71,7 +71,7 @@ class authController {
       await user.save();
       console.log(user);
       const AccessToken = await createTokens(user._id, res);
-      return res.status(200).json({
+      return res.status(201).json({
         message: 'Пользователь успешно зарегистрирован',
         AccessToken: AccessToken,
       });

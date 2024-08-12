@@ -49,6 +49,12 @@ class oauthController {
       var user = await User.findOne({ googleId });
       const userRole = await Role.findOne({ value: 'USER' });
       if (!user && verified_email === true) {
+        var isEmail = await User.findOne({ email: default_email });
+        if (isEmail) {
+          return res.status(400).json({
+            message: 'Пользователь с такой почтой уже зарегистрирован',
+          });
+        }
         user = new User({
           roles: [userRole.value],
           isOauth: true,
@@ -56,10 +62,15 @@ class oauthController {
           googleId,
         });
         user.save();
+        const AccessToken = await createTokens(user._id, res);
+        return res.status(201).json({
+          message: 'Пользователь успешно зарегистрирован',
+          AccessToken: AccessToken,
+        });
       }
       const AccessToken = await createTokens(user._id, res);
       return res.status(200).json({
-        message: 'Пользователь успешно авторизован/зарегистрирован',
+        message: 'Пользователь успешно авторизован',
         AccessToken: AccessToken,
       });
     } catch (err) {
@@ -99,7 +110,7 @@ class oauthController {
         });
         user.save();
         const AccessToken = await createTokens(user._id, res);
-        return res.status(200).json({
+        return res.status(201).json({
           message: 'Пользователь успешно зарегистрирован',
           AccessToken: AccessToken,
         });
