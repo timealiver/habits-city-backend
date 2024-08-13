@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { secret } = require('../config/config');
+const axios = require('axios');
 function authMiddleware(req, res, next) {
   try {
     const authHeader = req.headers['authorization'];
@@ -9,7 +10,7 @@ function authMiddleware(req, res, next) {
       return res.status(401).json({ message: 'Токен не предоставлен' }); // if there isn't any token
 
     const user = jwt.verify(token, secret);
-    req.user = user.id;
+    req.user = user;
     next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {

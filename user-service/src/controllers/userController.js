@@ -2,10 +2,11 @@ const User = require('../models/User.js');
 class userController {
   async getInfo(req, res) {
     try {
-      const user = await User.findById('66b898984336bf34f30bddd5');
-
+      console.log(req.user);
+      const user = await User.findById(req.user.userId);
+      console.log(user);
       return res.status(200).json({
-        username: 'TimurGranatovich',
+        username: user.username,
         email: user.email,
         isOnline: true,
         avatar: 'https://avatars.githubusercontent.com/u/739984?v=4',

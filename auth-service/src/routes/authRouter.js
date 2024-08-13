@@ -30,6 +30,6 @@ router.post('/login', controller.login);
 router.post('/sms_auth', controller.smsAuth);
 router.get('/google', oAuthController.googleAuth);
 router.get('/yandex', oAuthController.yandexAuth);
-router.post('/updateToken', tokenController.updateToken);
+router.get('/updateToken', tokenController.updateToken);
 
 module.exports = router;
