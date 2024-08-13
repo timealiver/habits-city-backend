@@ -67,6 +67,7 @@ class authController {
         password: hashPassword,
         phone: phone,
         roles: [userRole.value],
+        isOauth: false,
       });
       await user.save();
       console.log(user);

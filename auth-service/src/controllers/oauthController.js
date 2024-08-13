@@ -9,6 +9,22 @@ const {
 const qs = require('querystring');
 const { createTokens } = require('../utils/createTokens.js');
 const axios = require('axios');
+async function generateUsername() {
+  let username;
+  let isUnique = false;
+  while (!isUnique) {
+    // Генерация случайного 8-значного числа
+    const randomNumber = Math.floor(10000000 + Math.random() * 90000000);
+    username = `User${randomNumber}`;
+
+    // Проверка уникальности username в базе данных
+    const existingUser = await User.findOne({ username });
+    if (!existingUser) {
+      isUnique = true;
+    }
+  }
+  return username;
+}
 class oauthController {
   async googleAuth(req, res) {
     try {
@@ -55,7 +71,9 @@ class oauthController {
             message: 'Пользователь с такой почтой уже зарегистрирован',
           });
         }
+        const newUsername = generateUsername();
         user = new User({
+          username: newUsername,
           roles: [userRole.value],
           isOauth: true,
           email,
@@ -77,7 +95,10 @@ class oauthController {
       console.log(err);
       return res
         .status(400)
-        .json({ message: 'Ошибка при валидации Google-пользователя.' });
+        .json(
+          { message: 'Ошибка при валидации Google-пользователя.' },
+          error.toString(),
+        );
     }
   }
   async yandexAuth(req, res) {
@@ -102,7 +123,9 @@ class oauthController {
             message: 'Пользователь с такой почтой уже зарегистрирован',
           });
         }
+        const newUsername = generateUsername();
         user = new User({
+          username: newUsername,
           roles: [userRole.value],
           isOauth: true,
           email: default_email,
