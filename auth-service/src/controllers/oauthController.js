@@ -61,17 +61,17 @@ class oauthController {
         },
       );
 
-      const { id: googleId, email, verified_email } = google_user.data;
+      const { id: googleId, email } = google_user.data;
       var user = await User.findOne({ googleId });
       const userRole = await Role.findOne({ value: 'USER' });
-      if (!user && verified_email === true) {
-        var isEmail = await User.findOne({ email: default_email });
+      if (!user) {
+        var isEmail = await User.findOne({ email });
         if (isEmail) {
           return res.status(400).json({
-            message: 'Пользователь с такой почтой уже зарегистрирован',
+            message: `Пользователь с почтой ${email} уже зарегистрирован`,
           });
         }
-        const newUsername = generateUsername();
+        const newUsername = await generateUsername();
         user = new User({
           username: newUsername,
           roles: [userRole.value],
@@ -97,7 +97,7 @@ class oauthController {
         .status(400)
         .json(
           { message: 'Ошибка при валидации Google-пользователя.' },
-          error.toString(),
+          err.toString(),
         );
     }
   }
