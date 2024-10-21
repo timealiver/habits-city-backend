@@ -6,7 +6,6 @@ const { SMS_MAIL, SMS_API } = require('../config/config.js');
 const AuthCode = require('../models/AuthCode.js');
 const { createTokens } = require('../utils/createTokens.js');
 const { SmsAero, SmsAeroError, SmsAeroHTTPError } = require('smsaero');
-
 const generateAuthCode = () => {
   const codeLength = 6;
   const possibleChars = '0123456789';
@@ -159,3 +158,182 @@ class authController {
 }
 
 module.exports = new authController();
+
+/**
+ * @swagger
+ * /auth/registration:
+ *   post:
+ *     summary: Регистрация нового пользователя
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Пользователь успешно зарегистрирован
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 AccessToken:
+ *                   type: string
+ *         headers:
+ *           Set-Cookie:
+ *             schema:
+ *               type: string
+ *               example: refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZjliM2I5YjlkOWQ0NDAwMDBkNGYwMDAiLCJpYXQiOjE2MDUzMjA5MzMsImV4cCI6MTYwNjUyMDkzM30.9Rb2kQn7-HK380q5K6QJ7V4321; HttpOnly; Max-Age=604800; Path=/; SameSite=Strict
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *
+ * /auth/login:
+ *   post:
+ *     summary: Авторизация пользователя
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Пользователь успешно авторизован
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 AccessToken:
+ *                   type: string
+ *         headers:
+ *           Set-Cookie:
+ *             schema:
+ *               type: string
+ *               example: refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZjliM2I5YjlkOWQ0NDAwMDBkNGYwMDAiLCJpYXQiOjE2MDUzMjA5MzMsImV4cCI6MTYwNjUyMDkzM30.9Rb2kQn7-HK380q5K6QJ7V4321; HttpOnly; Max-Age=604800; Path=/; SameSite=Strict
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *
+ * /auth/sms_auth:
+ *   post:
+ *     summary: Аутентификация через СМС
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               code:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Авторизация прошла успешно
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 AccessToken:
+ *                   type: string
+ *         headers:
+ *           Set-Cookie:
+ *             schema:
+ *               type: string
+ *               example: refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZjliM2I5YjlkOWQ0NDAwMDBkNGYwMDAiLCJpYXQiOjE2MDUzMjA5MzMsImV4cCI6MTYwNjUyMDkzM30.9Rb2kQn7-HK380q5K6QJ7V4321; HttpOnly; Max-Age=604800; Path=/; SameSite=Strict
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       required:
+ *         - username
+ *         - password
+ *         - roles
+ *         - isOauth
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: уникальный идентификатор пользователя
+ *         username:
+ *           type: string
+ *           description: уникальное имя пользователя
+ *         password:
+ *           type: string
+ *           description: Хэшированный пароль
+ *         phone:
+ *           type: string
+ *           description: Телефонный номер пользователя
+ *         roles:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Роль, прикрепленная к пользователю
+ *         isOauth:
+ *           type: boolean
+ *           description: Указывает, есть ли авторизация через сторонние сервисы
+ *         googleId:
+ *           type: string
+ *           description: При наличии авторизации через Google содержит googleId
+ *         yandexId:
+ *           type: string
+ *           description: При наличии авторизации через Yandex содержит yandexId
+ *       example:
+ *         _id: 5f9b3b9b9d9d440000d4f000
+ *         username: johndoe
+ *         password: $2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
+ *         phone: +1234567890
+ *         roles:
+ *           - USER
+ *         isOauth: false
+ *         googleId: null
+ *         yandexId: null
+ */

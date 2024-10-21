@@ -22,6 +22,9 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.4.5",
     "nodemon": "^3.1.4",
-    "smsaero": "^2.0.0"
+    "smsaero": "^2.0.0",
+    "swagger": "^0.7.5",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   }
 }

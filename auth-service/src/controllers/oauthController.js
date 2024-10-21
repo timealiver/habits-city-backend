@@ -151,3 +151,94 @@ class oauthController {
 }
 
 module.exports = new oauthController();
+
+/**
+ * @swagger
+ * /auth/google:
+ *   get:
+ *     summary: Аутентификация через Google
+ *     tags: [OAuth]
+ *     parameters:
+ *       - in: query
+ *         name: code
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Код авторизации, вовзращенный от Google
+ *     responses:
+ *       200:
+ *         description: Пользователь успешно авторизован
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 AccessToken:
+ *                   type: string
+ *       201:
+ *         description: Пользователь успешно зарегистрирован
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 AccessToken:
+ *                   type: string
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *
+ * /auth/yandex:
+ *   get:
+ *     summary: Аутентификация пользователя через Yandex
+ *     tags: [OAuth]
+ *     parameters:
+ *       - in: query
+ *         name: code
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Код авторизации, возвращаемый Yandex
+ *     responses:
+ *       200:
+ *         description: Пользователь успешно авторизован
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 AccessToken:
+ *                   type: string
+ *       201:
+ *         description: Пользователь успешно зарегистрирован
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 AccessToken:
+ *                   type: string
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */

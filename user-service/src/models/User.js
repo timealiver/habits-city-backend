@@ -9,5 +9,6 @@ const User = new Schema({
   isOauth: { type: Boolean },
   googleId: { type: String, unique: true, sparse: true },
   yandexId: { type: String, unique: true, sparse: true },
+  avatar: { type: String },
 });
 module.exports = model('User', User);
