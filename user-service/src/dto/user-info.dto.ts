@@ -17,6 +17,7 @@ export class UserInfoDto {
   @IsOptional()
   phone?: string;
 
+  @Expose()
   @IsArray()
   @IsString({ each: true })
   @IsNotEmpty()
@@ -27,14 +28,7 @@ export class UserInfoDto {
   @IsNotEmpty()
   isOauth?: boolean;
 
-  @IsString()
-  @IsOptional()
-  googleId?: string;
-
-  @IsString()
-  @IsOptional()
-  yandexId?: string;
-
+  @Expose()
   @IsString()
   @IsOptional()
   avatar?: string;
