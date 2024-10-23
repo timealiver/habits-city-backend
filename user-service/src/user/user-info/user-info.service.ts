@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { plainToInstance } from 'class-transformer';
 import { Model } from 'mongoose';
@@ -10,22 +10,33 @@ import { User } from 'src/models/user.model';
 export class UserInfoService {
     constructor (@InjectModel(User.name) private userModel: Model<User>){}
     async getInfo(userId: string){
-        const user = await this.userModel.findOne({_id: userId});
-        console.log(user, userId);
-        return plainToInstance(UserInfoDto,user,{excludeExtraneousValues: true});
+        try {
+            const user = await this.userModel.findOne({_id: userId});
+            console.log(user, userId);
+            return plainToInstance(UserInfoDto,user,{excludeExtraneousValues: true});  
+        } catch (error) {
+            throw new HttpException(`Error occured: ${error}`, HttpStatus.BAD_REQUEST);
+        }
     }
     async getUsersByUsername(username: string){
-        const regex = new RegExp(`^${username}`, 'i');
-        const users = await this.userModel.find({username: regex});
-        console.log(users);
-        return plainToInstance(SearchInfoDto,users,{excludeExtraneousValues: true})
+        try {
+            const regex = new RegExp(`^${username}`, 'i');
+            const users = await this.userModel.find({username: regex});
+            return plainToInstance(SearchInfoDto,users,{excludeExtraneousValues: true})  
+        } catch (error) {
+            throw new HttpException(`Error occured: ${error}`, HttpStatus.BAD_REQUEST);
+        }
     }
     async isUsernameTaken(username: string): Promise<boolean> {
-        const user = await this.userModel.findOne({username: { $eq: username, $ne: null }});
-        if (!user){
-            return false;
+        try {
+            const user = await this.userModel.findOne({username: { $eq: username, $ne: null }});
+            if (!user){
+                return false;
+            }
+            return true;
+        } catch (error) {
+            throw new HttpException(`Error occured: ${error}`, HttpStatus.BAD_REQUEST);
         }
-        return true;
     }
 
 } 

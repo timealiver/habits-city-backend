@@ -123,7 +123,7 @@ class oauthController {
             message: 'Пользователь с такой почтой уже зарегистрирован',
           });
         }
-        const newUsername = generateUsername();
+        const newUsername = await generateUsername();
         user = new User({
           username: newUsername,
           roles: [userRole.value],

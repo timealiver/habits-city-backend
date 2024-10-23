@@ -9,4 +9,7 @@ export class SearchInfoDto {
 
   @Expose()
   avatar?: string;
+
+  @Expose()
+  rating?: number;
 }
