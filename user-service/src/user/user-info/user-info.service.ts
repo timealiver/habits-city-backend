@@ -17,15 +17,15 @@ export class UserInfoService {
     async getUsersByUsername(username: string){
         const regex = new RegExp(`^${username}`, 'i');
         const users = await this.userModel.find({username: regex});
+        console.log(users);
         return plainToInstance(SearchInfoDto,users,{excludeExtraneousValues: true})
     }
     async isUsernameTaken(username: string): Promise<boolean> {
         const user = await this.userModel.findOne({username: { $eq: username, $ne: null }});
-        console.log(user, username);
         if (!user){
             return false;
         }
         return true;
-}
+    }
 
 } 

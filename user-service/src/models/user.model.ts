@@ -1,5 +1,6 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema} from 'mongoose';
+import { Habit } from './habit.model';
 
 @Schema({collection: "users"})
 export class User extends Document {
@@ -29,6 +30,21 @@ export class User extends Document {
 
   @Prop()
   avatar: string;
+
+  @Prop()
+  balance: number;
+
+  @Prop()
+  rating: number;
+
+  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Habit' }] })
+  habits: Habit[];
+  
+  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'User' }] })
+  subscriptions: User[];
+
+  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'User' }] })
+  subscribers: User[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

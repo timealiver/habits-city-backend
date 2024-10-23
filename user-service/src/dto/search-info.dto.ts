@@ -8,7 +8,5 @@ export class SearchInfoDto {
   username?: string;
 
   @Expose()
-  @IsString()
-  @IsOptional()
   avatar?: string;
 }
