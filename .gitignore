@@ -4,3 +4,6 @@ user-service/node_modules/
 user-service/.env
 user-service/dist/
 user-servic/node_modules/
+
+node_modules
+.idea

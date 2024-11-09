@@ -1,0 +1,10 @@
+{
+  "name": "habits-city-backend",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "concurrently \"npm start --prefix ./auth-service\" \"npm start --prefix ./user-service\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
