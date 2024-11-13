@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from 'src/models/user.model';
+import { EmailCode, EmailCodeSchema } from 'src/models/EmailCode.model';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { User, UserSchema } from 'src/models/user.model';
     }),
     inject: [ConfigService],
   }),
-  MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])],
+  MongooseModule.forFeature([{ name: User.name, schema: UserSchema },{ name: EmailCode.name, schema: EmailCodeSchema }])],
   providers: [UserInfoService, ChangeInfoService],
   controllers: [UserController]
 })

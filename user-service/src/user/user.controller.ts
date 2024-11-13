@@ -51,5 +51,21 @@ async changePassword(@Request() request, @Body(new ValidationPipe()) changePassw
     return this.changeInfoService.changePassword(oldPassword,newPassword,userId);
 }
 
+@Post("sendEmailCode")
+@UseGuards(AuthGuard)
+async sendEmailCode(@Request() request, @Body('email') email: string):Promise<{ status: string }>{
+    const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const isEmail = reg.test(String(email).toLowerCase());
+    if (!isEmail){
+        throw new BadRequestException("Not an email");
+    }
+    const userId = request.user.userId;
+    return this.changeInfoService.sendEmailCode(email,userId);
+}
 
+@Get('verifyCode')
+@UseGuards(AuthGuard)
+async verifyCode(@Request() request){
+    return {status: "OK"};
+}
 }
