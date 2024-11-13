@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Request, Param, Query, UseInterceptors, Post, UploadedFile, Body, BadRequestException } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Param, Query, UseInterceptors, Post, UploadedFile, Body, BadRequestException, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from './auth.guard';
 import { UserInfoService } from './user-info/user-info.service';
 import { UserInfoDto } from 'src/dto/user-info.dto';
@@ -42,12 +42,8 @@ async changeAvatar(@UploadedFile() file: Express.Multer.File, @Request() request
 
 @Post("changePassword")
 @UseGuards(AuthGuard)
-async changePassword(@Request() request, @Body() changePasswordDto: ChangePasswordDto):Promise<{ status: string }>{
+async changePassword(@Request() request, @Body(new ValidationPipe()) changePasswordDto: ChangePasswordDto):Promise<{ status: string }>{
     const userId=request.user.userId;
-    const errors = await validate(changePasswordDto);
-    if (errors.length > 0) {
-      throw new BadRequestException(errors);
-    }
     const {oldPassword,newPassword} = changePasswordDto;
     if (!oldPassword || !newPassword){
         throw new BadRequestException("Empty field(s)");
