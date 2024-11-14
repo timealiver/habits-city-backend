@@ -6,6 +6,7 @@ import * as AWS from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
 import * as nodemailer from 'nodemailer';
+import { SentMessageInfo } from 'nodemailer';
 import { EmailCode } from 'src/models/EmailCode.model';
 
 @Injectable()
@@ -112,12 +113,20 @@ export class ChangeInfoService {
           to: `${email}`,
           subject: 'Код верификации для HabitsCity',
           text: `Вы получили это сообщение, т.к. на ваш email был запрошен код для авторизации на сайте HabitsCity. Если вы этого не делали, не отвечайте на сообщение. \nКод: ${code} `,
-        };  
-        const resp = await this.transporter.sendMail(mailOptions,(err, info) => {
-          console.log(err, info);
-        });
-        console.log(await resp);
-        if (!resp.response.contains("250 OK")){
+        }; 
+        const sendMailAsync = (mailOptions:any): Promise<SentMessageInfo> => {
+          return new Promise((resolve, reject) => {
+            this.transporter.sendMail(mailOptions, (err, info) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(info);
+              }
+            });
+          });
+        };
+        const resp = await sendMailAsync(mailOptions);
+        if (!resp.response.includes("250 OK")){
           throw new HttpException("Error while sending code. Try again later.",HttpStatus.BAD_REQUEST);
         }
         await this.emailCodeModel.deleteMany({userId: userId});
