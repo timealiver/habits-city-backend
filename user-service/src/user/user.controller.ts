@@ -63,9 +63,10 @@ async sendEmailCode(@Request() request, @Body('email') email: string):Promise<{ 
     return this.changeInfoService.sendEmailCode(email,userId);
 }
 
-@Get('verifyCode')
+@Post('verifyCode')
 @UseGuards(AuthGuard)
-async verifyCode(@Request() request){
-    return {status: "OK"};
+async verifyCode(@Request() request, @Body('code') code: string):Promise<{ status: string }>{
+    const userId = request.user.userId;
+    return this.changeInfoService.verifyCode(code,userId);
 }
 }

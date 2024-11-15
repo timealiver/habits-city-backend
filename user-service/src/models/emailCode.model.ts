@@ -7,6 +7,9 @@ export class EmailCode extends Document {
   userId: string;
 
   @Prop()
+  email: string;
+  
+  @Prop()
   code: string;
 
   @Prop()

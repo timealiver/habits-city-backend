@@ -8,6 +8,7 @@ import * as bcrypt from 'bcrypt';
 import * as nodemailer from 'nodemailer';
 import { SentMessageInfo } from 'nodemailer';
 import { EmailCode } from 'src/models/EmailCode.model';
+import { emailTemplate } from 'src/utils/emailTemplate';
 
 @Injectable()
 export class ChangeInfoService {
@@ -17,11 +18,11 @@ export class ChangeInfoService {
         AWS.config.update({
             accessKeyId: process.env.AWS_ACCESS_KEY_ID,
             secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-            region: 'ru-central1', 
+            region: 'ru-central1',
           });
-      
+
           this.s3 = new AWS.S3({
-            endpoint: 'hb.ru-msk.vkcloud-storage.ru', 
+            endpoint: 'hb.ru-msk.vkcloud-storage.ru',
           });
           this.transporter = nodemailer.createTransport({
             host: 'smtp.mail.ru',
@@ -33,7 +34,7 @@ export class ChangeInfoService {
             },
           });
     }
-    async changeAvatar(file: Express.Multer.File,userId:string,){
+    async changeAvatar(file: Express.Multer.File,userId:string){
 
       try {
         const user = await this.userModel.findById(userId);
@@ -42,7 +43,7 @@ export class ChangeInfoService {
           throw Error('User not found');
         }
         const key = `avatars/${uuidv4()}`;
-  
+
         await this.s3.putObject({
           Body: file.buffer,
           Bucket: 'users-photo',
@@ -50,9 +51,9 @@ export class ChangeInfoService {
           ContentType: file.mimetype,
           ACL: 'public-read'
         }).promise();
-  
+
         const fileUrl = `https://hb.ru-msk.vkcloud-storage.ru/users-photo/${key}`;
-  
+
         // Обновите информацию о пользователе в базе данных
         if (user.avatar!=null){
           const key = user.avatar.split('/')[5];
@@ -63,7 +64,7 @@ export class ChangeInfoService {
         }
         user.avatar = fileUrl;
         await user.save();
-  
+
         return { url: fileUrl };
       } catch (error) {
         console.error('Error uploading file:', error);
@@ -90,8 +91,8 @@ export class ChangeInfoService {
           if (error instanceof HttpException){
             throw error;
           }
-          throw new HttpException(`${error}`, HttpStatus.BAD_REQUEST);  
-        }   
+          throw new HttpException(`${error}`, HttpStatus.BAD_REQUEST);
+        }
     }
     async sendEmailCode(email:string,userId:string){
       try {
@@ -113,7 +114,8 @@ export class ChangeInfoService {
           to: `${email}`,
           subject: 'Код верификации для HabitsCity',
           text: `Вы получили это сообщение, т.к. на ваш email был запрошен код для авторизации на сайте HabitsCity. Если вы этого не делали, не отвечайте на сообщение. \nКод: ${code} `,
-        }; 
+          html: emailTemplate(code)
+        };
         const sendMailAsync = (mailOptions:any): Promise<SentMessageInfo> => {
           return new Promise((resolve, reject) => {
             this.transporter.sendMail(mailOptions, (err, info) => {
@@ -131,7 +133,7 @@ export class ChangeInfoService {
         }
         await this.emailCodeModel.deleteMany({userId: userId});
         const emailCode = new this.emailCodeModel({
-         //add email to emailCode model and here
+          email:email,
           userId: userId,
           code: code,
           expiresAt: new Date(Date.now()+ 10 * 60 * 1000)
@@ -145,8 +147,28 @@ export class ChangeInfoService {
           throw new HttpException(error,HttpStatus.BAD_REQUEST);
         }
     }
-    
+
     async verifyCode(code:string,userId:string){
+      try {
+        const code_data= await this.emailCodeModel.findOne({code:code,userId:userId});
+        if (!code_data){
+          throw new HttpException("Code is incorrect. Try again.",HttpStatus.BAD_REQUEST);
+        }
+        const currentDate=new Date();
+        console.log(code_data.expiresAt.getTime(),currentDate.getTime())
+        if (code_data.expiresAt.getTime()<currentDate.getTime()){
+          throw new HttpException("Code expired. Try again.",HttpStatus.BAD_REQUEST);
+        }
+        const user = await this.userModel.findOne({_id:userId});
+        user.email=code_data.email;
+        user.save();
+        return {status:"OK"};
+      } catch (error) {
+        if (error instanceof HttpException){
+          throw error;
+        }
+        throw new HttpException(error,HttpStatus.BAD_REQUEST);
+      }
       //findOne AuthCode by code && userId
       //check if code isExpired while verify
       //if found ->change Email to email from AuthCode
