@@ -5,6 +5,7 @@ const User = new Schema({
   password: { type: String },
   email: { type: String, unique: true, sparse: true },
   phone: { type: String, unique: true, sparse: true },
+  bio: { type: String },
   roles: [{ type: String, ref: 'Role' }],
   isOauth: { type: Boolean, default: false },
   googleId: { type: String, unique: true, sparse: true },

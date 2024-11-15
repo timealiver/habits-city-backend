@@ -6,7 +6,7 @@ import { SearchInfoDto } from 'src/dto/search-info.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ChangeInfoService } from './change-info/change-info.service';
 import { ChangePasswordDto } from 'src/dto/change-password.dto';
-import { validate } from 'class-validator';
+import { ChangeDataDto } from 'src/dto/change-data.dto';
 @Controller('user')
 export class UserController {
     constructor(
@@ -69,4 +69,12 @@ async verifyCode(@Request() request, @Body('code') code: string):Promise<{ statu
     const userId = request.user.userId;
     return this.changeInfoService.verifyCode(code,userId);
 }
+
+@Post('changeData')
+@UseGuards(AuthGuard)
+async changeData(@Request() request,@Body() changeDataDto: ChangeDataDto):Promise<{ status: string }>{
+    const userId = request.user.userId;
+    return this.changeInfoService.changeData(changeDataDto,userId);
+}
+
 }

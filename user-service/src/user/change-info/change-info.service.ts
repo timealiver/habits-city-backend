@@ -9,6 +9,8 @@ import * as nodemailer from 'nodemailer';
 import { SentMessageInfo } from 'nodemailer';
 import { EmailCode } from 'src/models/EmailCode.model';
 import { emailTemplate } from 'src/utils/emailTemplate';
+import { ChangeDataDto } from 'src/dto/change-data.dto';
+import { validate } from 'class-validator';
 
 @Injectable()
 export class ChangeInfoService {
@@ -161,7 +163,7 @@ export class ChangeInfoService {
         }
         const user = await this.userModel.findOne({_id:userId});
         user.email=code_data.email;
-        user.save();
+        await user.save();
         return {status:"OK"};
       } catch (error) {
         if (error instanceof HttpException){
@@ -169,10 +171,32 @@ export class ChangeInfoService {
         }
         throw new HttpException(error,HttpStatus.BAD_REQUEST);
       }
-      //findOne AuthCode by code && userId
-      //check if code isExpired while verify
-      //if found ->change Email to email from AuthCode
-      //if not found -> say that this code is incorrect
+    }
+    async changeData(changeDataDto:ChangeDataDto,userId:string){
+      const {newUsername,newBio} = changeDataDto;
+      const usernamePattern =/^[a-zA-Z0-9_]+$/;
+      if (!usernamePattern.test(newUsername)){
+        throw new HttpException("Username should contain only letters, numbers or underscore", HttpStatus.BAD_REQUEST)
+      }
+      if(newUsername.length<8){
+        throw new HttpException("Username should contain at least 8 symbols", HttpStatus.BAD_REQUEST)
+      }
+      if (newUsername){
+        const isTaken = await this.userModel.findOne({username: { $eq: newUsername, $ne: null }});
+        if (isTaken){
+          throw new HttpException("Username is already taken", HttpStatus.BAD_REQUEST)
+        }
+        const user = await this.userModel.findOne({_id:userId});
+        user.username=newUsername;
+        await user.save();
+      }
+      if (newBio){
+        const user = await this.userModel.findOne({_id:userId});
+        user.bio=newBio;
+        await user.save();
+      }
+
+      return {status:"OK"};
     }
 
 }

@@ -13,7 +13,10 @@ export class UserInfoService {
         try {
             const user = await this.userModel.findOne({_id: userId});
             console.log(user, userId);
-            return plainToInstance(UserInfoDto,user,{excludeExtraneousValues: true});  
+            const data = plainToInstance(UserInfoDto,user,{excludeExtraneousValues: true}); 
+            user.googleId!=null?data.isGoogle=true:data.isGoogle=false;
+            user.yandexId!=null?data.isYandex=true:data.isYandex=false;
+            return data;
         } catch (error) {
             throw new HttpException(`Error occured: ${error}`, HttpStatus.BAD_REQUEST);
         }

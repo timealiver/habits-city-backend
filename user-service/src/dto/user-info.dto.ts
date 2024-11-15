@@ -13,6 +13,9 @@ export class UserInfoDto {
   email?: string;
 
   @Expose()
+  bio:boolean;
+
+  @Expose()
   @IsString()
   @IsOptional()
   phone?: string;
@@ -32,4 +35,11 @@ export class UserInfoDto {
   @IsString()
   @IsOptional()
   avatar?: string;
+
+  @Expose()
+  isYandex: boolean;
+
+  @Expose()
+  isGoogle: boolean;
+
 }

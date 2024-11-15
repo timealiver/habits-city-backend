@@ -16,6 +16,9 @@ export class User extends Document {
   @Prop({ unique: true, sparse: true })
   phone: string;
 
+  @Prop ()
+  bio: string;
+  
   @Prop([String])
   roles: string[];
 
