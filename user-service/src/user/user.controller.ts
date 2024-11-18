@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Request, Query, UseInterceptors, Post, UploadedFile, Body, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Query, UseInterceptors, Post, UploadedFile, Body, ValidationPipe, Delete } from '@nestjs/common';
 import { AuthGuard } from './auth.guard';
 import { UserInfoService } from './user-info/user-info.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -74,4 +74,10 @@ async changeData(@Request() request,@Body() changeDataDto: ChangeDataDto): Promi
     return this.changeInfoService.changeData(changeDataDto,userId);
 }
 
+@Delete('deleteAccount')
+@UseGuards(AuthGuard)
+async deleteUser(@Request() request){
+    const userId = request.user.userId;
+    return this.changeInfoService.deleteAccount(userId);
+}
 }

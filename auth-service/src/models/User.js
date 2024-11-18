@@ -16,5 +16,15 @@ const User = new Schema({
   habits: [{ type: Schema.Types.ObjectId, ref: 'Habit', default: null }],
   subscriptions: [{ type: Schema.Types.ObjectId, ref: 'User', default: null }],
   subscribers: [{ type: Schema.Types.ObjectId, ref: 'User', default: null }],
+  isDeleted: { type: Boolean },
+});
+User.pre('find', function (next) {
+  this.where({ isDeleted: { $ne: true } });
+  next();
+});
+
+User.pre('findOne', function (next) {
+  this.where({ isDeleted: { $ne: true } });
+  next();
 });
 module.exports = model('User', User);

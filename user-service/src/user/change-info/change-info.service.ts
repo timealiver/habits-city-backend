@@ -40,7 +40,7 @@ export class ChangeInfoService {
     async changeAvatar(file: Express.Multer.File,userId:string){
 
       try {
-        const user = await this.userModel.findById(userId);
+        const user = await this.userModel.findOne({_id:userId});
         if (!user){
           console.log(userId);
           return customResponse('error',"USER_NOT_FOUND");
@@ -79,7 +79,7 @@ export class ChangeInfoService {
         if (oldPassword==newPassword){
           return customResponse("error","SAME_PASSWORD");
         }
-        const user = await this.userModel.findById(userId);
+        const user = await this.userModel.findOne({_id:userId});
         const userPassword = user.password;
         const isSame = await bcrypt.compare(oldPassword, userPassword);
         if (isSame){
@@ -196,6 +196,16 @@ export class ChangeInfoService {
         return customResponse('success',"OK")
       } catch (error) {
         return customResponse('error',"UNKNOWN_ERROR",error)
+      }
+    }
+    async deleteAccount(userId:string){
+      try {
+        const user = await this.userModel.findOne({_id:userId});
+        user.isDeleted = true;
+        await user.save();
+        return customResponse("success","USER_DELETED");
+      } catch (error) {
+        return customResponse("error","UNKNOWN_ERROR");
       }
     }
 

@@ -48,6 +48,18 @@ export class User extends Document {
 
   @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'User' }] })
   subscribers: User[];
+
+  @Prop()
+  isDeleted: boolean
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+UserSchema.pre('find', function(next) {
+  this.where({ isDeleted: { $ne: true } });
+  next();
+});
+
+UserSchema.pre('findOne', function(next) {
+  this.where({ isDeleted: { $ne: true } });
+  next();
+});
