@@ -1,8 +1,6 @@
-import { Controller, Get, UseGuards, Request, Param, Query, UseInterceptors, Post, UploadedFile, Body, BadRequestException, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Query, UseInterceptors, Post, UploadedFile, Body, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from './auth.guard';
 import { UserInfoService } from './user-info/user-info.service';
-import { UserInfoDto } from 'src/dto/user-info.dto';
-import { SearchInfoDto } from 'src/dto/search-info.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ChangeInfoService } from './change-info/change-info.service';
 import { ChangePasswordDto } from 'src/dto/change-password.dto';
@@ -11,6 +9,7 @@ import { LocalizationInterceptor } from './localization.interceptor';
 import { ApiResponse } from 'src/interfaces/response.interface';
 import { customResponse} from 'src/utils/customResponse.utils';
 @Controller('user')
+@UseInterceptors(LocalizationInterceptor)
 export class UserController {
     constructor(
         private readonly userInfoService: UserInfoService, 
@@ -45,7 +44,6 @@ async changeAvatar(@UploadedFile() file: Express.Multer.File, @Request() request
 
 @Post("changePassword")
 @UseGuards(AuthGuard)
-@UseInterceptors(LocalizationInterceptor)
 async changePassword(@Request() request, @Body(new ValidationPipe()) changePasswordDto: ChangePasswordDto):Promise<ApiResponse>{
     const userId=request.user.userId;
     const {oldPassword,newPassword} = changePasswordDto;

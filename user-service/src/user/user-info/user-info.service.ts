@@ -19,7 +19,7 @@ export class UserInfoService {
             user.googleId!=null?data.isGoogle=true:data.isGoogle=false;
             user.yandexId!=null?data.isYandex=true:data.isYandex=false;
             data.rating=String(Math.floor(Number(data.rating)*Math.random()*10))
-            return customResponse('success','DONE',data);
+            return customResponse('success','OK',data);
         } catch (error) {
             return customResponse('error',"UNKNOWN_ERROR",error);
         }
@@ -29,7 +29,7 @@ export class UserInfoService {
             const regex = new RegExp(`^${username}`, 'i');
             const users = await this.userModel.find({username: regex});
             const data = plainToInstance(SearchInfoDto,users,{excludeExtraneousValues: true});
-            return customResponse('success','DONE',data);
+            return customResponse('success','OK',data);
         } catch (error) {
             return customResponse('error',"UNKNOWN_ERROR",error);
         }
@@ -38,9 +38,9 @@ export class UserInfoService {
         try {
             const user = await this.userModel.findOne({username: { $eq: username, $ne: null }});
             if (!user){
-                return customResponse('success','DONE',{isTaken:false});
+                return customResponse('success','OK',{isTaken:false});
             }
-            return customResponse('success','DONE',{isTaken:true});
+            return customResponse('success','OK',{isTaken:true});
         } catch (error) {
             return customResponse('error',"UNKNOWN_ERROR",error);
         }
