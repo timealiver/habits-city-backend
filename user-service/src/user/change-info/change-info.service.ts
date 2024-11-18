@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, Post, UseInterceptors } from '@nestjs/common';
+import {Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/models/user.model';
@@ -10,7 +10,8 @@ import { SentMessageInfo } from 'nodemailer';
 import { EmailCode } from 'src/models/EmailCode.model';
 import { emailTemplate } from 'src/utils/emailTemplate';
 import { ChangeDataDto } from 'src/dto/change-data.dto';
-import { validate } from 'class-validator';
+import { customResponse } from 'src/utils/customResponse.utils';
+
 
 @Injectable()
 export class ChangeInfoService {
@@ -42,7 +43,7 @@ export class ChangeInfoService {
         const user = await this.userModel.findById(userId);
         if (!user){
           console.log(userId);
-          throw Error('User not found');
+          return customResponse('error',"USER_NOT_FOUND");
         }
         const key = `avatars/${uuidv4()}`;
 
@@ -67,16 +68,16 @@ export class ChangeInfoService {
         user.avatar = fileUrl;
         await user.save();
 
-        return { url: fileUrl };
+        return customResponse("success","OK",{ url: fileUrl });
       } catch (error) {
         console.error('Error uploading file:', error);
-        throw new HttpException(`Error occured: ${error}`, HttpStatus.BAD_REQUEST);
+        return customResponse('error',"UNKNOWN_ERROR",error)
       }
     }
     async changePassword(oldPassword: string, newPassword: string, userId:string){
       try {
         if (oldPassword==newPassword){
-          throw new HttpException('Passwords are the same', HttpStatus.BAD_REQUEST);
+          return customResponse("error","SAME_PASSWORD");
         }
         const user = await this.userModel.findById(userId);
         const userPassword = user.password;
@@ -84,24 +85,26 @@ export class ChangeInfoService {
         if (isSame){
           user.password=bcrypt.hashSync(newPassword, 7);
           await user.save();
-          return {status: "OK"}
+          return customResponse("success","USER_UPDATED")
         }
         else {
-          throw new HttpException('Invalid old password', HttpStatus.BAD_REQUEST);
+          return customResponse("error","INVALID_OLD_PASSWORD")
         }
         } catch (error) {
-          if (error instanceof HttpException){
-            throw error;
-          }
-          throw new HttpException(`${error}`, HttpStatus.BAD_REQUEST);
+          return customResponse('error',"UNKNOWN_ERROR",error)
         }
     }
     async sendEmailCode(email:string,userId:string){
       try {
+        const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isEmail = reg.test(String(email).toLowerCase());
+        if (!isEmail){
+            return customResponse("error","NOT_AN_EMAIL");
+        }
         const users = await this.userModel.find({ email: email, _id: { $ne: userId } });
         console.log(users,users.length);
         if (users.length!=0){
-        throw new HttpException("This email is already in use by another account.",HttpStatus.BAD_REQUEST)
+          return customResponse('error',"EMAIL_TAKEN")
         }
         const codeLength = 6;
         const possibleChars = '0123456789';
@@ -131,7 +134,7 @@ export class ChangeInfoService {
         };
         const resp = await sendMailAsync(mailOptions);
         if (!resp.response.includes("250 OK")){
-          throw new HttpException("Error while sending code. Try again later.",HttpStatus.BAD_REQUEST);
+          return customResponse('error',"EMAIL_SEND_FAILED")
         }
         await this.emailCodeModel.deleteMany({userId: userId});
         const emailCode = new this.emailCodeModel({
@@ -141,12 +144,9 @@ export class ChangeInfoService {
           expiresAt: new Date(Date.now()+ 10 * 60 * 1000)
         });
         await emailCode.save();
-        return {status:"OK"};
+        return customResponse('success','OK')
         } catch (error) {
-          if (error instanceof HttpException){
-            throw error;
-          }
-          throw new HttpException(error,HttpStatus.BAD_REQUEST);
+          return customResponse('error',"UNKNOWN_ERROR",error)
         }
     }
 
@@ -154,49 +154,49 @@ export class ChangeInfoService {
       try {
         const code_data= await this.emailCodeModel.findOne({code:code,userId:userId});
         if (!code_data){
-          throw new HttpException("Code is incorrect. Try again.",HttpStatus.BAD_REQUEST);
+          return customResponse('error',"INCORRECT_CODE")
         }
         const currentDate=new Date();
         console.log(code_data.expiresAt.getTime(),currentDate.getTime())
         if (code_data.expiresAt.getTime()<currentDate.getTime()){
-          throw new HttpException("Code expired. Try again.",HttpStatus.BAD_REQUEST);
+          return customResponse('error',"CODE_EXPIRED")
         }
         const user = await this.userModel.findOne({_id:userId});
         user.email=code_data.email;
         await user.save();
-        return {status:"OK"};
+        return customResponse('success',"OK")
       } catch (error) {
-        if (error instanceof HttpException){
-          throw error;
-        }
-        throw new HttpException(error,HttpStatus.BAD_REQUEST);
+        return customResponse('error',"UNKNOWN_ERROR",error)
       }
     }
     async changeData(changeDataDto:ChangeDataDto,userId:string){
-      const {newUsername,newBio} = changeDataDto;
-      const usernamePattern =/^[a-zA-Z0-9_]+$/;
-      if (!usernamePattern.test(newUsername)){
-        throw new HttpException("Username should contain only letters, numbers or underscore", HttpStatus.BAD_REQUEST)
-      }
-      if(newUsername.length<8){
-        throw new HttpException("Username should contain at least 8 symbols", HttpStatus.BAD_REQUEST)
-      }
-      if (newUsername){
-        const isTaken = await this.userModel.findOne({username: { $eq: newUsername, $ne: null }});
-        if (isTaken){
-          throw new HttpException("Username is already taken", HttpStatus.BAD_REQUEST)
+      try {
+        const {username,bio} = changeDataDto;
+        if (username){
+        const usernamePattern =/^[a-zA-Z0-9_]+$/;
+          if (!usernamePattern.test(username)){
+            return customResponse('error',"USERNAME_INVALID")
+          }
+          if(username.length<4){
+            return customResponse('error',"USERNAME_SHORT")
+          }
+            const isTaken = await this.userModel.findOne({username: { $eq: username, $ne: null }});
+            if (isTaken){
+              return customResponse('error',"USERNAME_TAKEN")
+            }
+            const user = await this.userModel.findOne({_id:userId});
+            user.username=username;
+            await user.save();
         }
-        const user = await this.userModel.findOne({_id:userId});
-        user.username=newUsername;
-        await user.save();
+        if (bio){
+          const user = await this.userModel.findOne({_id:userId});
+          user.bio=bio;
+          await user.save();
+        }
+        return customResponse('success',"OK")
+      } catch (error) {
+        return customResponse('error',"UNKNOWN_ERROR",error)
       }
-      if (newBio){
-        const user = await this.userModel.findOne({_id:userId});
-        user.bio=newBio;
-        await user.save();
-      }
-
-      return {status:"OK"};
     }
 
 }

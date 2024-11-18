@@ -16,6 +16,9 @@ export class UserInfoDto {
   bio:boolean;
 
   @Expose()
+  rating?: string;
+
+  @Expose()
   @IsString()
   @IsOptional()
   phone?: string;

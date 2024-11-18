@@ -2,9 +2,8 @@ import { IsString} from 'class-validator';
 
 export class ChangeDataDto {
   @IsString()
-  newUsername: string;
+  username: string;
 
   @IsString()
-
-  newBio: string;
+  bio: string;
 }

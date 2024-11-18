@@ -4,41 +4,45 @@ import { plainToInstance } from 'class-transformer';
 import { Model } from 'mongoose';
 import { SearchInfoDto } from 'src/dto/search-info.dto';
 import { UserInfoDto } from 'src/dto/user-info.dto';
+import { ApiResponse } from 'src/interfaces/response.interface';
 import { User } from 'src/models/user.model';
+import { customResponse } from 'src/utils/customResponse.utils';
 
 @Injectable()
 export class UserInfoService {
     constructor (@InjectModel(User.name) private userModel: Model<User>){}
-    async getInfo(userId: string){
+    async getInfo(userId: string):Promise<ApiResponse>{
         try {
             const user = await this.userModel.findOne({_id: userId});
             console.log(user, userId);
             const data = plainToInstance(UserInfoDto,user,{excludeExtraneousValues: true}); 
             user.googleId!=null?data.isGoogle=true:data.isGoogle=false;
             user.yandexId!=null?data.isYandex=true:data.isYandex=false;
-            return data;
+            data.rating=String(Math.floor(Number(data.rating)*Math.random()*10))
+            return customResponse('success','DONE',data);
         } catch (error) {
-            throw new HttpException(`Error occured: ${error}`, HttpStatus.BAD_REQUEST);
+            return customResponse('error',"UNKNOWN_ERROR",error);
         }
     }
-    async getUsersByUsername(username: string){
+    async getUsersByUsername(username: string):Promise<ApiResponse>{
         try {
             const regex = new RegExp(`^${username}`, 'i');
             const users = await this.userModel.find({username: regex});
-            return plainToInstance(SearchInfoDto,users,{excludeExtraneousValues: true})  
+            const data = plainToInstance(SearchInfoDto,users,{excludeExtraneousValues: true});
+            return customResponse('success','DONE',data);
         } catch (error) {
-            throw new HttpException(`Error occured: ${error}`, HttpStatus.BAD_REQUEST);
+            return customResponse('error',"UNKNOWN_ERROR",error);
         }
     }
-    async isUsernameTaken(username: string): Promise<boolean> {
+    async isUsernameTaken(username: string):Promise<ApiResponse> {
         try {
             const user = await this.userModel.findOne({username: { $eq: username, $ne: null }});
             if (!user){
-                return false;
+                return customResponse('success','DONE',{isTaken:false});
             }
-            return true;
+            return customResponse('success','DONE',{isTaken:true});
         } catch (error) {
-            throw new HttpException(`Error occured: ${error}`, HttpStatus.BAD_REQUEST);
+            return customResponse('error',"UNKNOWN_ERROR",error);
         }
     }
 
