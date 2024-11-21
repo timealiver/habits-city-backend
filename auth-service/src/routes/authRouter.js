@@ -8,26 +8,18 @@ const tokenController = require('../controllers/tokenController.js');
 router.post(
   '/registration',
   [
-    check('username', 'Имя пользователя не может быть пустым').notEmpty(),
-    check('password', 'Пароль не может быть короче 6 символов').isLength({
+    check('username', 'USERNAME_EMPTY').notEmpty(),
+    check('username', 'USERNAME_SHORT').isLength({ min: 4 }),
+    check('username', 'USERNAME_INVALID').matches('/^[a-zA-Z0-9_]+$/'),
+    check('password', 'PASSWORD_SHORT').isLength({
       min: 6,
     }),
-    check('password', 'Пароль должен содержать хотя бы одну цифру').matches(
-      /[0-9]/,
-    ),
-    check(
-      'password',
-      'Пароль должен содержать хотя бы одну заглавную букву',
-    ).matches(/[A-Z]/),
-    check('phone')
-      .optional()
-      .isMobilePhone('ru-RU')
-      .withMessage('Номер указан неверно'),
+    check('password', 'PASSWORD_NUM').matches(/[0-9]/),
+    check('password', 'PASSWORD_CAPITAL').matches(/[A-Z]/),
   ],
   controller.registration,
 );
 router.post('/login', controller.login);
-router.post('/sms_auth', controller.smsAuth);
 router.get('/google', oAuthController.googleAuth);
 router.get('/yandex', oAuthController.yandexAuth);
 router.get('/updateToken', tokenController.updateToken);
