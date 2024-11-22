@@ -30,7 +30,7 @@ class tokenController {
       const AccessToken = await createAccessToken(payload.userId);
       return res.status(200).json(
         ApiResponse.createSuccess(locale, 'TOKEN_UPDATED', {
-          AccesToken: AccessToken,
+          AccessToken: AccessToken,
         }),
       );
     } catch (error) {
