@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { plainToInstance } from 'class-transformer';
 import { Model } from 'mongoose';
+import { FriendStatus } from 'src/dto/friends.enum';
 import { SearchInfoDto } from 'src/dto/search-info.dto';
 import { UserInfoDto } from 'src/dto/user-info.dto';
 import { ApiResponse } from 'src/interfaces/response.interface';
@@ -24,11 +25,18 @@ export class UserInfoService {
             return customResponse('error',"UNKNOWN_ERROR",error);
         }
     }
-    async getUsersByUsername(username: string):Promise<ApiResponse>{
+    async getUsersByUsername(username: string, userId: string):Promise<ApiResponse>{
         try {
             const regex = new RegExp(`^${username}`, 'i');
-            const users = await this.userModel.find({username: regex});
-            const data = plainToInstance(SearchInfoDto,users,{excludeExtraneousValues: true});
+            const users = await this.userModel.find({
+                username: regex,
+                _id: { $ne: userId } 
+            });
+            const data = users.map(user => {
+                const friendStatus = this.getRandomFriendStatus();
+                const rating=String(Math.floor(Math.random()*100))
+                return plainToInstance(SearchInfoDto, { ...user.toObject(), isFriend: friendStatus, rating: rating }, { excludeExtraneousValues: true });
+            });
             return customResponse('success','OK',data);
         } catch (error) {
             return customResponse('error',"UNKNOWN_ERROR",error);
@@ -46,4 +54,9 @@ export class UserInfoService {
         }
     }
 
+    private getRandomFriendStatus(): FriendStatus {
+        const values = Object.values(FriendStatus);
+        const randomIndex = Math.floor(Math.random() * values.length);
+        return values[randomIndex];
+    }
 } 

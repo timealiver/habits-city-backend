@@ -35,6 +35,7 @@ class authController {
         password: hashPassword,
         roles: [userRole.value],
         isOauth: false,
+        createdAt: new Date(Date.now()),
       });
       await user.save();
       console.log(user);

@@ -29,10 +29,10 @@ const MESSAGES = {
   },
   ru: {
     success: {
-      USER_CREATED: 'Пользователь успешно зарегистрирован.',
-      USER_UPDATED: 'Данные пользователя успешно обновлены.',
-      OK: 'Операция выполнена.',
-      TOKEN_UPDATED: 'Токен обновлен.',
+      USER_CREATED: 'Пользователь успешно зарегистрирован',
+      USER_UPDATED: 'Данные пользователя успешно обновлены',
+      OK: 'Операция выполнена',
+      TOKEN_UPDATED: 'Токен обновлен',
       LOGGED_IN: 'Пользователь успешно авторизован',
     },
     error: {
@@ -46,14 +46,14 @@ const MESSAGES = {
       PASSWORD_NUM: 'Пароль должен содержать хотя бы одну цифру',
       PASSWORD_CAPITAL: 'Пароль должен содержать хотя бы одну заглавную букву',
       UNKNOWN_ERROR: 'Неизвестная ошибка',
-      USER_NOT_FOUND: 'Пользователь не найден.',
-      INCORRECT_PASSWORD: 'Пароль неверен.',
+      USER_NOT_FOUND: 'Пользователь не найден',
+      INCORRECT_PASSWORD: 'Пароль неверен',
       GOOGLE_CODE_EMPTY:
-        'Не был получен код от Google. Повторите попытку входа.',
-      EMAIL_TAKEN: 'Почта уже используется.',
-      RT_EMPTY: 'Refresh Token не был предоставлен.',
-      TOKEN_NOT_FOUND: 'Этот Refresh Token не был выдан.',
-      TOKEN_EXPIRED: 'Токен истек.',
+        'Не был получен код от Google. Повторите попытку входа',
+      EMAIL_TAKEN: 'Почта уже используется',
+      RT_EMPTY: 'Refresh Token не был предоставлен',
+      TOKEN_NOT_FOUND: 'Этот Refresh Token не был выдан',
+      TOKEN_EXPIRED: 'Токен истек',
     },
   },
 };

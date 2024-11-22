@@ -24,8 +24,9 @@ async getInfo(@Request() request):Promise<ApiResponse>{
 }
 @Get("searchUsers")
 @UseGuards(AuthGuard)
-async getSearchUsers(@Query('username') username: string):Promise<ApiResponse>{
-    return this.userInfoService.getUsersByUsername(username);
+async getSearchUsers(@Request() request,@Query('username') username: string):Promise<ApiResponse>{
+    const user = request.user.userId;
+    return this.userInfoService.getUsersByUsername(username, user);
 }
 
 @Get("isTaken")

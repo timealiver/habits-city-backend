@@ -80,6 +80,7 @@ class oauthController {
           isOauth: true,
           email,
           googleId,
+          createdAt: new Date(Date.now()),
         });
         user.save();
         const AccessToken = await createTokens(user._id, res);
@@ -135,6 +136,7 @@ class oauthController {
           isOauth: true,
           email: default_email,
           yandexId,
+          createdAt: new Date(Date.now()),
         });
         user.save();
         const AccessToken = await createTokens(user._id, res);

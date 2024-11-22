@@ -51,6 +51,9 @@ export class User extends Document {
 
   @Prop()
   isDeleted: boolean
+  
+  @Prop()
+  createdAt: Date
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

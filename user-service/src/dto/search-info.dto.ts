@@ -1,5 +1,6 @@
 import { IsString,IsOptional,IsNotEmpty } from 'class-validator';
 import { Expose, Exclude } from 'class-transformer';
+import { FriendStatus } from './friends.enum';
 @Exclude()
 export class SearchInfoDto {
   @Expose()
@@ -12,4 +13,13 @@ export class SearchInfoDto {
 
   @Expose()
   rating?: number;
+
+  @Expose()
+  bio?: string;
+
+  @Expose()
+  createdAt?: Date;
+
+  @Expose()
+  isFriend: FriendStatus;
 }

@@ -44,5 +44,8 @@ export class UserInfoDto {
 
   @Expose()
   isGoogle: boolean;
+  
+  @Expose()
+  createdAt: Date;
 
 }

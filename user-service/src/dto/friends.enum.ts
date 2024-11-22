@@ -1,0 +1,6 @@
+export enum FriendStatus {
+    FOLLOWING = 'FOLLOWING',
+    FOLLOWED = 'FOLLOWED',
+    FRIENDS = 'FRIENDS',
+    NOT_FOLLOWING = 'NOT_FOLLOWING'
+}

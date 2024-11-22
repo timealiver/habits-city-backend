@@ -188,11 +188,11 @@ export class ChangeInfoService {
             user.username=username;
             await user.save();
         }
-        if (bio){
           const user = await this.userModel.findOne({_id:userId});
+          if (!(user.bio==bio)){
           user.bio=bio;
           await user.save();
-        }
+          }
         return customResponse('success',"OK")
       } catch (error) {
         return customResponse('error',"UNKNOWN_ERROR",error)

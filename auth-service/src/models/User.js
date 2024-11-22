@@ -17,6 +17,7 @@ const User = new Schema({
   subscriptions: [{ type: Schema.Types.ObjectId, ref: 'User', default: null }],
   subscribers: [{ type: Schema.Types.ObjectId, ref: 'User', default: null }],
   isDeleted: { type: Boolean },
+  createdAt: { type: Date },
 });
 User.pre('find', function (next) {
   this.where({ isDeleted: { $ne: true } });
