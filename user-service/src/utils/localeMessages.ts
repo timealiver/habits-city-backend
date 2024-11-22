@@ -11,20 +11,22 @@ export const MESSAGES = {
         SAME_PASSWORD:"Passwords can't be the same.",
         EMPTY_FIELDS: "Empty field(s).",
         INVALID_OLD_PASSWORD: "Old password is incorrect.",
-        NOT_AN_EMAIL:"Provided string is not an email",
+        NOT_AN_EMAIL:"Provided string is not an email.",
         EMAIL_TAKEN:"Email is already in use.",
         EMAIL_SEND_FAILED:"Failed to send email. Please try again later.",
         INCORRECT_CODE:"Provided code is incorrect.",
         CODE_EXPIRED:"Code expired. Please try again later.",
-        USERNAME_INVALID:"Username should contain only letters, numbers or underscore",
-        USERNAME_SHORT:"Username should contain at least 4 symbols",
-        USERNAME_TAKEN:"Username is already in use"
+        USERNAME_INVALID:"Username should contain only letters, numbers or underscore.",
+        USERNAME_SHORT:"Username should contain at least 4 symbols.",
+        USERNAME_TAKEN:"Username is already in use.",
+        LOGGED_IN: "You have successfully logged into your account."
       },
     },
     ru: {
       success: {
         USER_UPDATED: "Данные пользователя успешно обновлены.",
-        OK:"Операция выполнена."
+        OK:"Операция выполнена.",
+        LOGGED_IN: "Вы успешно вошли в аккаунт."
       },
       error: {
         UNKNOWN_ERROR: "Неизвестная ошибка.",
@@ -38,9 +40,10 @@ export const MESSAGES = {
         EMAIL_SEND_FAILED:"Не удалось отправить email. Пожалуйста, попробуйте позже.",
         INCORRECT_CODE:"Предоставленный код неверен.",
         CODE_EXPIRED:"Код просрочен. Пожалуйста,попробуйте позже.",
-        USERNAME_INVALID:"Имя пользователя должно содержать только латиницу, цифры или _",
-        USERNAME_SHORT:"Имя пользователя должнодолжно содержать минимум 4 символа",
-        USERNAME_TAKEN:"Имя пользователя занято"
+        USERNAME_INVALID:"Имя пользователя должно содержать только латиницу, цифры или _.",
+        USERNAME_SHORT:"Имя пользователя должнодолжно содержать минимум 4 символа.",
+        USERNAME_TAKEN:"Имя пользователя занято."
+        
       },
     },
   };

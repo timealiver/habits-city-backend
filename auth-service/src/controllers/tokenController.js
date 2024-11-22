@@ -2,38 +2,49 @@ const jwt = require('jsonwebtoken');
 const { secret } = require('../config/config');
 const RefreshToken = require('../models/RefreshToken');
 const User = require('../models/User');
-const { createTokens } = require('../utils/createTokens.js');
+const { createTokens, createAccessToken } = require('../utils/createTokens.js');
+const ApiResponse = require('../interfaces/response.js');
 class tokenController {
   async updateToken(req, res) {
     try {
-      let token = req.headers.authorization;
+      let token = req.cookies.refresh_token;
+      const locale = req.headers['x-locale-language'];
       if (!token) {
         return res
           .status(400)
-          .json({ message: 'RefreshToken отсутствует в запросе' });
+          .json(ApiResponse.createError(locale, 'RT_EMPTY', null));
       }
-      token = token.split(' ')[1];
       const payload = jwt.verify(token, secret);
-      const isExist = await User.findById(payload.id);
+      const isExist = await User.findOne({ _id: payload.userId });
       if (!isExist) {
-        return res.status(400).json({ message: 'Пользователь не найден' });
+        return res
+          .status(400)
+          .json(ApiResponse.createError(locale, 'USER_NOT_FOUND', null));
       }
       const isRefresh = await RefreshToken.findOne({ token });
       if (!isRefresh) {
         return res
           .status(400)
-          .json({ message: 'Токен не найден в базе данных' });
+          .json(ApiResponse.createError(locale, 'TOKEN_NOT_FOUND', null));
       }
-      const AccessToken = await createTokens(payload.id, res);
-      return res.status(200).json({
-        message: 'Токен успешно обновлен',
-        AccessToken: AccessToken,
-      });
+      const AccessToken = await createAccessToken(payload.userId);
+      return res.status(200).json(
+        ApiResponse.createSuccess(locale, 'TOKEN_UPDATED', {
+          AccesToken: AccessToken,
+        }),
+      );
     } catch (error) {
+      const locale = req.headers['x-locale-language'];
       if (error instanceof jwt.TokenExpiredError) {
-        return res.status(401).json({ message: 'Токен истёк' });
+        return res
+          .status(401)
+          .json(ApiResponse.createError(locale, 'TOKEN_EXPIRED', null));
       } else {
-        return res.status(400).json({ message: error.toString() });
+        return res.status(401).json(
+          ApiResponse.createError(locale, 'UKNOWN_ERROR', {
+            error: error.toString(),
+          }),
+        );
       }
     }
   }

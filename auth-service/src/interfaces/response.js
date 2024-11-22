@@ -9,7 +9,7 @@ class ApiResponse {
 
   static createSuccess(locale, code, data) {
     if (!locale) {
-      locale = en;
+      locale = 'en';
     }
     const message = MESSAGES[locale]?.success[code];
     return new ApiResponse('success', code, message, data);

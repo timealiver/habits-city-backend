@@ -1,8 +1,8 @@
 const RefreshToken = require('../models/RefreshToken');
 const { secret } = require('../config/config');
 const jwt = require('jsonwebtoken');
-module.exports.createTokens = async function (userId, res) {
-  const AccessToken = jwt.sign({ userId }, secret, { expiresIn: '48h' });
+async function createTokens(userId, res) {
+  const AccessToken = jwt.sign({ userId }, secret, { expiresIn: '30m' });
   const RefrToken = jwt.sign({ userId }, secret, { expiresIn: '30d' });
   await RefreshToken.deleteMany({
     userId: userId,
@@ -19,4 +19,12 @@ module.exports.createTokens = async function (userId, res) {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
   return AccessToken;
+}
+async function createAccessToken(userId) {
+  const AccessToken = jwt.sign({ userId }, secret, { expiresIn: '30m' });
+  return AccessToken;
+}
+module.exports = {
+  createTokens,
+  createAccessToken,
 };

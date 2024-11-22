@@ -2,7 +2,6 @@ const User = require('../models/User.js');
 const Role = require('../models/Role.js');
 const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
-const AuthCode = require('../models/AuthCode.js');
 const { createTokens } = require('../utils/createTokens.js');
 const ApiResponse = require('../interfaces/response.js');
 
@@ -18,19 +17,15 @@ class authController {
           .json(ApiResponse.createError(locale, errorsObject[0].msg, null));
       }
 
-      const { username, password, phone } = req.body;
+      const { username, password } = req.body;
       const candidate = await User.findOne({
-        $or: [{ username }, { phone: { $ne: null } }],
+        $or: [{ username }],
       });
       if (candidate) {
         if (candidate.username === username) {
           return res
             .status(400)
-            .json(ApiResponse.createSuccess(locale, 'SAME_USERNAME', null));
-        } else if (candidate.phone === phone) {
-          return res.status(400).json({
-            message: 'Пользователь с таким номером телефона уже существует',
-          });
+            .json(ApiResponse.createError(locale, 'SAME_USERNAME', null));
         }
       }
       const hashPassword = bcrypt.hashSync(password, 7);
@@ -38,64 +33,62 @@ class authController {
       const user = new User({
         username,
         password: hashPassword,
-        phone: phone,
         roles: [userRole.value],
         isOauth: false,
       });
       await user.save();
       console.log(user);
       const AccessToken = await createTokens(user._id, res);
-      return res.status(201).json({
-        message: 'Пользователь успешно зарегистрирован',
-        AccessToken: AccessToken,
-      });
+      return res.status(201).json(
+        ApiResponse.createSuccess(locale, 'USER_CREATED', {
+          AccessToken: AccessToken,
+        }),
+      );
     } catch (e) {
+      const locale = req.headers['x-locale-language'];
       console.log(e);
-      res.status(400).json(e);
+      res.status(400).json(
+        ApiResponse.createError(locale, 'UNKNOWN_ERROR', {
+          error: e.toString(),
+        }),
+      );
     }
   }
   async login(req, res) {
     try {
-      const { username, password, phone } = req.body;
+      const { username, password } = req.body;
+      const locale = req.headers['x-locale-language'];
       if (username != null) {
         const user = await User.findOne({ username });
         if (!user) {
           return res
             .status(400)
-            .json({ message: `Пользователь ${username} не найден` });
+            .json(ApiResponse.createError(locale, 'USER_NOT_FOUND', null));
         }
         const validPassword = bcrypt.compareSync(password, user.password);
         if (!validPassword) {
-          return res.status(400).json({ message: 'Введен неверный пароль' });
+          return res
+            .status(400)
+            .json(ApiResponse.createError(locale, 'INCORRECT_PASSWORD', null));
         }
         const AccessToken = await createTokens(user._id, res);
-        return res.status(200).json({ AccessToken: AccessToken });
-      } else if (phone != null) {
-        const user = await User.findOne({ phone });
-        if (!user) {
-          return res.status(400).json({ message: `Номер не зарегистрирован` });
-        }
-        await AuthCode.deleteMany({ userId: user._id });
-        const code = generateAuthCode();
-        const authCode = new AuthCode({
-          userId: user._id,
-          code: code,
-          expiresAt: new Date(Date.now() + 1000 * 60 * 10),
-        });
-        authCode.save();
-        console.log(code);
-        //sendSMSS(phone, code);
-        return res.status(200).json({
-          message:
-            'Код сгенерирован и сохранен в БД. СМС отправлено. Отправьте еще один запрос на /auth/sms_auth с полями phone и code',
-        });
+        return res.status(200).json(
+          ApiResponse.createSuccess(locale, 'LOGGED_IN', {
+            AccessToken: AccessToken,
+          }),
+        );
       } else {
         return res
-          .status(200)
-          .json({ message: 'Не введен ни логин, ни номер' });
+          .status(400)
+          .json(ApiResponse.createError(locale, 'USERNAME_EMPTY', null));
       }
     } catch (error) {
-      return res.status(400).json(error.toString());
+      const locale = req.headers['x-locale-language'];
+      res.status(400).json(
+        ApiResponse.createError(locale, 'UNKNOWN_ERROR', {
+          error: error.toString(),
+        }),
+      );
     }
   }
 }
@@ -127,12 +120,7 @@ module.exports = new authController();
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 AccessToken:
- *                   type: string
+ *               $ref: '#/components/schemas/ApiResponse'
  *         headers:
  *           Set-Cookie:
  *             schema:
@@ -143,10 +131,7 @@ module.exports = new authController();
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
+ *               $ref: '#/components/schemas/ApiResponse'
  *
  * /auth/login:
  *   post:
@@ -171,10 +156,7 @@ module.exports = new authController();
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 AccessToken:
- *                   type: string
+ *               $ref: '#/components/schemas/ApiResponse'
  *         headers:
  *           Set-Cookie:
  *             schema:
@@ -185,10 +167,7 @@ module.exports = new authController();
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
+ *               $ref: '#/components/schemas/ApiResponse'
  *
  */
 
@@ -240,4 +219,25 @@ module.exports = new authController();
  *         isOauth: false
  *         googleId: null
  *         yandexId: null
+ *     ApiResponse:
+ *       type: object
+ *       properties:
+ *         status:
+ *           type: string
+ *           enum: [success, error]
+ *         code:
+ *           type: string
+ *         message:
+ *           type: string
+ *         data:
+ *           type: object
+ *           properties:
+ *             AccessToken:
+ *               type: string
+ *       example:
+ *         status: success
+ *         code: USER_CREATED
+ *         message: User data updated successfully.
+ *         data:
+ *           AccessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZjliM2I5YjlkOWQ0NDAwMDBkNGYwMDAiLCJpYXQiOjE2MDUzMjA5MzMsImV4cCI6MTYwNjUyMDkzM30.9Rb2kQn7-HK380q5K6QJ7V4321
  */

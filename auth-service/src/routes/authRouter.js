@@ -10,7 +10,7 @@ router.post(
   [
     check('username', 'USERNAME_EMPTY').notEmpty(),
     check('username', 'USERNAME_SHORT').isLength({ min: 4 }),
-    check('username', 'USERNAME_INVALID').matches('/^[a-zA-Z0-9_]+$/'),
+    check('username', 'USERNAME_INVALID').matches(/^[a-zA-Z0-9_]+$/),
     check('password', 'PASSWORD_SHORT').isLength({
       min: 6,
     }),

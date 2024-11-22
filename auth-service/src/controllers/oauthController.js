@@ -9,6 +9,7 @@ const {
 const qs = require('querystring');
 const { createTokens } = require('../utils/createTokens.js');
 const axios = require('axios');
+const ApiResponse = require('../interfaces/response.js');
 async function generateUsername() {
   let username;
   let isUnique = false;
@@ -29,10 +30,11 @@ class oauthController {
   async googleAuth(req, res) {
     try {
       const code = req.query.code;
+      const locale = req.headers['x-locale-language'];
       if (!code) {
-        return res.status(400).json({
-          message: 'Не был получен код от Google. Повторите попытку входа.',
-        });
+        return res
+          .status(400)
+          .json(ApiResponse.createError(locale, 'GOOGLE_CODE_EMPTY', null));
       }
       const values = {
         code,
@@ -67,9 +69,9 @@ class oauthController {
       if (!user) {
         var isEmail = await User.findOne({ email });
         if (isEmail) {
-          return res.status(400).json({
-            message: `Пользователь с почтой ${email} уже зарегистрирован`,
-          });
+          return res
+            .status(400)
+            .json(ApiResponse.createError(locale, 'EMAIL_TAKEN', null));
         }
         const newUsername = await generateUsername();
         user = new User({
@@ -81,29 +83,32 @@ class oauthController {
         });
         user.save();
         const AccessToken = await createTokens(user._id, res);
-        return res.status(201).json({
-          message: 'Пользователь успешно зарегистрирован',
-          AccessToken: AccessToken,
-        });
+        return res.status(201).json(
+          ApiResponse.createSuccess(locale, 'USER_CREATED', {
+            AccessToken: AccessToken,
+          }),
+        );
       }
       const AccessToken = await createTokens(user._id, res);
-      return res.status(200).json({
-        message: 'Пользователь успешно авторизован',
-        AccessToken: AccessToken,
-      });
+      return res.status(200).json(
+        ApiResponse.createSuccess(locale, 'LOGGED_IN', {
+          AccessToken: AccessToken,
+        }),
+      );
     } catch (err) {
       console.log(err);
-      return res
-        .status(400)
-        .json(
-          { message: 'Ошибка при валидации Google-пользователя.' },
-          err.toString(),
-        );
+      const locale = req.headers['x-locale-language'];
+      return res.status(400).json(
+        ApiResponse.createError(locale, 'UNKNOWN_ERROR', {
+          error: err.toString(),
+        }),
+      );
     }
   }
   async yandexAuth(req, res) {
     try {
       const yandex_token = req.query.code;
+      const locale = req.headers['x-locale-language'];
       const user_info = await axios.get(
         'https://login.yandex.ru/info?format=json',
         {
@@ -119,9 +124,9 @@ class oauthController {
       if (!user) {
         var isEmail = await User.findOne({ email: default_email });
         if (isEmail) {
-          return res.status(400).json({
-            message: 'Пользователь с такой почтой уже зарегистрирован',
-          });
+          return res
+            .status(400)
+            .json(ApiResponse.createError(locale, 'EMAIL_TAKEN', null));
         }
         const newUsername = await generateUsername();
         user = new User({
@@ -133,19 +138,26 @@ class oauthController {
         });
         user.save();
         const AccessToken = await createTokens(user._id, res);
-        return res.status(201).json({
-          message: 'Пользователь успешно зарегистрирован',
-          AccessToken: AccessToken,
-        });
+        return res.status(201).json(
+          ApiResponse.createSuccess(locale, 'USER_CREATED', {
+            AccessToken: AccessToken,
+          }),
+        );
       }
       const AccessToken = await createTokens(user._id, res);
-      return res.status(200).json({
-        message: 'Пользователь успешно авторизован',
-        AccessToken: AccessToken,
-      });
+      return res.status(200).json(
+        ApiResponse.createSuccess(locale, 'LOGGED_IN', {
+          AccessToken: AccessToken,
+        }),
+      );
     } catch (error) {
+      const locale = req.headers['x-locale-language'];
       console.log(error);
-      return res.status(400).json(error.toString());
+      return res.status(400).json(
+        ApiResponse.createError(locale, 'UNKNOWN_ERROR', {
+          error: err.toString(),
+        }),
+      );
     }
   }
 }
@@ -164,39 +176,26 @@ module.exports = new oauthController();
  *         schema:
  *           type: string
  *         required: true
- *         description: Код авторизации, вовзращенный от Google
+ *         description: Код авторизации, возвращенный от Google
  *     responses:
  *       200:
  *         description: Пользователь успешно авторизован
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 AccessToken:
- *                   type: string
+ *               $ref: '#/components/schemas/ApiResponse'
  *       201:
  *         description: Пользователь успешно зарегистрирован
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 AccessToken:
- *                   type: string
+ *               $ref: '#/components/schemas/ApiResponse'
  *       400:
  *         description: Bad request
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
+ *               $ref: '#/components/schemas/ApiResponse'
  *
  * /auth/yandex:
  *   get:
@@ -215,30 +214,89 @@ module.exports = new oauthController();
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 AccessToken:
- *                   type: string
+ *               $ref: '#/components/schemas/ApiResponse'
  *       201:
  *         description: Пользователь успешно зарегистрирован
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 AccessToken:
- *                   type: string
+ *               $ref: '#/components/schemas/ApiResponse'
  *       400:
  *         description: Bad request
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
+ *               $ref: '#/components/schemas/ApiResponse'
+ *
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       required:
+ *         - username
+ *         - password
+ *         - roles
+ *         - isOauth
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: уникальный идентификатор пользователя
+ *         username:
+ *           type: string
+ *           description: уникальное имя пользователя
+ *         password:
+ *           type: string
+ *           description: Хэшированный пароль
+ *         phone:
+ *           type: string
+ *           description: Телефонный номер пользователя
+ *         roles:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Роль, прикрепленная к пользователю
+ *         isOauth:
+ *           type: boolean
+ *           description: Указывает, есть ли авторизация через сторонние сервисы
+ *         googleId:
+ *           type: string
+ *           description: При наличии авторизации через Google содержит googleId
+ *         yandexId:
+ *           type: string
+ *           description: При наличии авторизации через Yandex содержит yandexId
+ *       example:
+ *         _id: 5f9b3b9b9d9d440000d4f000
+ *         username: johndoe
+ *         password: $2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
+ *         phone: +1234567890
+ *         roles:
+ *           - USER
+ *         isOauth: false
+ *         googleId: null
+ *         yandexId: null
+ *     ApiResponse:
+ *       type: object
+ *       properties:
+ *         status:
+ *           type: string
+ *           enum: [success, error]
+ *         code:
+ *           type: string
+ *         message:
+ *           type: string
+ *         data:
+ *           type: object
+ *           properties:
+ *             AccessToken:
+ *               type: string
+ *       example:
+ *         status: success
+ *         code: USER_CREATED
+ *         message: User data updated successfully.
+ *         data:
+ *           AccessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZjliM2I5YjlkOWQ0NDAwMDBkNGYwMDAiLCJpYXQiOjE2MDUzMjA5MzMsImV4cCI6MTYwNjUyMDkzM30.9Rb2kQn7-HK380q5K6QJ7V4321
  */
