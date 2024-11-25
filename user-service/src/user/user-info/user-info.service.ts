@@ -42,15 +42,22 @@ export class UserInfoService {
             return customResponse('error',"UNKNOWN_ERROR",error);
         }
     }
-    async isUsernameTaken(username: string):Promise<ApiResponse> {
+    async isValidUsername(username: string):Promise<ApiResponse> {
         try {
-            const user = await this.userModel.findOne({username: { $eq: username, $ne: null }});
-            if (!user){
-                return customResponse('success','OK',{isTaken:false});
+            if (!username || username.length<4){
+                return customResponse('error',"USERNAME_SHORT")
             }
-            return customResponse('success','OK',{isTaken:true});
+            const usernamePattern =/^[a-zA-Z0-9_]+$/;
+            if (!usernamePattern.test(username)){
+              return customResponse('error',"USERNAME_INVALID")
+            }
+            const user = await this.userModel.findOne({username: { $eq: username, $ne: null }});
+            if (user){
+                return customResponse('error','USERNAME_TAKEN');
+            }
+            return customResponse('success','USERNAME_GOOD',);
         } catch (error) {
-            return customResponse('error',"UNKNOWN_ERROR",error);
+            return customResponse('error',"UNKNOWN_ERROR",{error: error.toString()});
         }
     }
     async getUserInfo(username: string, userId: string):Promise<ApiResponse>{

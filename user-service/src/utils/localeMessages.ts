@@ -2,7 +2,8 @@ export const MESSAGES = {
     en: {
       success: {
         USER_UPDATED: "User data updated successfully.",
-        OK:"Operation completed."
+        OK:"Operation completed.",
+        USERNAME_GOOD: "Username can be used"
       },
       error: {
         UNKNOWN_ERROR: "Unknown error.",
@@ -26,7 +27,8 @@ export const MESSAGES = {
       success: {
         USER_UPDATED: "Данные пользователя успешно обновлены.",
         OK:"Операция выполнена.",
-        LOGGED_IN: "Вы успешно вошли в аккаунт."
+        LOGGED_IN: "Вы успешно вошли в аккаунт.",
+        USERNAME_GOOD: "Имя пользователя может быть использовано"
       },
       error: {
         UNKNOWN_ERROR: "Неизвестная ошибка.",

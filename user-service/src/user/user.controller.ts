@@ -34,9 +34,9 @@ async getSearchUsers(@Request() request,@Query('username') username: string):Pro
     return this.userInfoService.getUsersByUsername(username, user);
 }
 
-@Get("isTaken")
+@Get("isValidUsername")
 async isUsernameTaken(@Query('username') username: string): Promise<ApiResponse>{
-    return this.userInfoService.isUsernameTaken(username);
+    return this.userInfoService.isValidUsername(username);
 }
 
 @Post("changeAvatar")
