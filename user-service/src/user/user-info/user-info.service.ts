@@ -53,7 +53,22 @@ export class UserInfoService {
             return customResponse('error',"UNKNOWN_ERROR",error);
         }
     }
-
+    async getUserInfo(username: string, userId: string):Promise<ApiResponse>{
+        try {
+            const user = await this.userModel.findOne({
+                username: username, 
+            });
+            if (!user){
+                return customResponse('error',"USER_NOT_FOUND",null)
+            }
+            const friendStatus = this.getRandomFriendStatus();
+            const rating=String(Math.floor(Math.random()*100))
+            const data = plainToInstance(SearchInfoDto, { ...user.toObject(), isFriend: friendStatus, rating: rating }, { excludeExtraneousValues: true });
+            return customResponse('success','OK',data);
+        } catch (error) {
+            return customResponse('error',"UNKNOWN_ERROR",error);
+        }
+    }
     private getRandomFriendStatus(): FriendStatus {
         const values = Object.values(FriendStatus);
         const randomIndex = Math.floor(Math.random() * values.length);

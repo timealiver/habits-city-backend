@@ -13,9 +13,6 @@ export class User extends Document {
   @Prop({ unique: true, sparse: true })
   email: string;
 
-  @Prop({ unique: true, sparse: true })
-  phone: string;
-
   @Prop ()
   bio: string;
   

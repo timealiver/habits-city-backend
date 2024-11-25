@@ -1,6 +1,6 @@
 import {Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { User } from 'src/models/user.model';
 import * as AWS from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
@@ -11,6 +11,7 @@ import { EmailCode } from 'src/models/EmailCode.model';
 import { emailTemplate } from 'src/utils/emailTemplate';
 import { ChangeDataDto } from 'src/dto/change-data.dto';
 import { customResponse } from 'src/utils/customResponse.utils';
+import { Habit } from 'src/models/habit.model';
 
 
 @Injectable()
@@ -199,14 +200,18 @@ export class ChangeInfoService {
       }
     }
     async deleteAccount(userId:string){
+      const session = await mongoose.startSession();
       try {
-        const user = await this.userModel.findOne({_id:userId});
-        user.isDeleted = true;
-        await user.save();
-        return customResponse("success","USER_DELETED");
+          await this.userModel.deleteOne({ _id: userId }).session(session); //удаляем юзера
+          await this.emailCodeModel.deleteMany({ _id: userId }).session(session); //удаляем emailCodes
+          //В дальнейшем здесь должны быть удаления записей из Friends модели, из RefreshToken модели и из Habit+UserHabit. На данном этапе модели не описаны и не интегрированы.
+          await session.commitTransaction();
+          session.endSession();
+          return customResponse("success","USER_DELETED");
       } catch (error) {
-        return customResponse("error","UNKNOWN_ERROR");
+          await session.abortTransaction();
+          session.endSession();
+          return customResponse("error","UNKNOWN_ERROR");
       }
     }
-
 }

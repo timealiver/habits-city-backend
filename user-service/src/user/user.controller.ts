@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Request, Query, UseInterceptors, Post, UploadedFile, Body, ValidationPipe, Delete } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Query, UseInterceptors, Post, UploadedFile, Body, ValidationPipe, Delete, Patch } from '@nestjs/common';
 import { AuthGuard } from './auth.guard';
 import { UserInfoService } from './user-info/user-info.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -9,6 +9,7 @@ import { LocalizationInterceptor } from './localization.interceptor';
 import { ApiResponse } from 'src/interfaces/response.interface';
 import { customResponse} from 'src/utils/customResponse.utils';
 @Controller('user')
+@UseGuards(AuthGuard)
 @UseInterceptors(LocalizationInterceptor)
 export class UserController {
     constructor(
@@ -17,26 +18,28 @@ export class UserController {
     ) {}
 
 @Get("getInfo")
-@UseGuards(AuthGuard)
 async getInfo(@Request() request):Promise<ApiResponse>{
     const user = request.user.userId;
     return this.userInfoService.getInfo(user);
 }
+
+@Get("getUserInfo")
+async getUserInfo(@Request() request, @Query('username') username: string ):Promise<ApiResponse>{
+    const user = request.user.userId;
+    return this.userInfoService.getUserInfo(username, user);
+}
 @Get("searchUsers")
-@UseGuards(AuthGuard)
 async getSearchUsers(@Request() request,@Query('username') username: string):Promise<ApiResponse>{
     const user = request.user.userId;
     return this.userInfoService.getUsersByUsername(username, user);
 }
 
 @Get("isTaken")
-@UseGuards(AuthGuard)
 async isUsernameTaken(@Query('username') username: string): Promise<ApiResponse>{
     return this.userInfoService.isUsernameTaken(username);
 }
 
 @Post("changeAvatar")
-@UseGuards(AuthGuard)
 @UseInterceptors(FileInterceptor('avatar'))
 async changeAvatar(@UploadedFile() file: Express.Multer.File, @Request() request): Promise<ApiResponse> {
     const userId = request.user.userId;
@@ -44,7 +47,6 @@ async changeAvatar(@UploadedFile() file: Express.Multer.File, @Request() request
   }
 
 @Post("changePassword")
-@UseGuards(AuthGuard)
 async changePassword(@Request() request, @Body(new ValidationPipe()) changePasswordDto: ChangePasswordDto):Promise<ApiResponse>{
     const userId=request.user.userId;
     const {oldPassword,newPassword} = changePasswordDto;
@@ -55,28 +57,24 @@ async changePassword(@Request() request, @Body(new ValidationPipe()) changePassw
 }
 
 @Post("sendEmailCode")
-@UseGuards(AuthGuard)
 async sendEmailCode(@Request() request, @Body('email') email: string): Promise<ApiResponse>{
     const userId = request.user.userId;
     return this.changeInfoService.sendEmailCode(email,userId);
 }
 
 @Post('verifyCode')
-@UseGuards(AuthGuard)
 async verifyCode(@Request() request, @Body('code') code: string):Promise<ApiResponse>{
     const userId = request.user.userId;
     return this.changeInfoService.verifyCode(code,userId);
 }
 
-@Post('changeData')
-@UseGuards(AuthGuard)
+@Patch('changeData')
 async changeData(@Request() request,@Body() changeDataDto: ChangeDataDto): Promise<ApiResponse>{
     const userId = request.user.userId;
     return this.changeInfoService.changeData(changeDataDto,userId);
 }
 
 @Delete('deleteAccount')
-@UseGuards(AuthGuard)
 async deleteUser(@Request() request){
     const userId = request.user.userId;
     return this.changeInfoService.deleteAccount(userId);
