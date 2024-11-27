@@ -8,7 +8,7 @@ import { MongooseModule } from '@nestjs/mongoose';
     ConfigModule.forRoot({
       isGlobal: true, // Это позволяет использовать ConfigService в любом модуле
     }),
-    MongooseModule.forRoot(process.env.MONGODB_CONNECTION_STRING),
+    MongooseModule.forRoot(process.env.MONGODB_CONNECTION_STRING, {serverSelectionTimeoutMS: 5000}),
   ],
   controllers: [],
   providers: [],

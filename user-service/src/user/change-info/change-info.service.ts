@@ -1,6 +1,7 @@
 import {Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import mongoose from 'mongoose';
 import { User } from 'src/models/user.model';
 import * as AWS from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
@@ -18,7 +19,7 @@ import { Habit } from 'src/models/habit.model';
 export class ChangeInfoService {
     private s3: AWS.S3;
     private transporter;
-    constructor (@InjectModel(User.name) private userModel: Model<User>, @InjectModel(EmailCode.name) private emailCodeModel: Model<EmailCode>){
+    constructor (@InjectModel(User.name) private userModel: Model<User>, @InjectModel(EmailCode.name) private emailCodeModel: Model<EmailCode>,  @InjectConnection() private readonly connection: mongoose.Connection){
         AWS.config.update({
             accessKeyId: process.env.AWS_ACCESS_KEY_ID,
             secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -200,8 +201,9 @@ export class ChangeInfoService {
       }
     }
     async deleteAccount(userId:string){
-      const session = await mongoose.startSession();
+      const session = await this.connection.startSession();
       try {
+          session.startTransaction()
           await this.userModel.deleteOne({ _id: userId }).session(session); //удаляем юзера
           await this.emailCodeModel.deleteMany({ _id: userId }).session(session); //удаляем emailCodes
           //В дальнейшем здесь должны быть удаления записей из Friends модели, из RefreshToken модели и из Habit+UserHabit. На данном этапе модели не описаны и не интегрированы.
