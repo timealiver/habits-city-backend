@@ -25,21 +25,35 @@ export class UserInfoService {
             return customResponse('error',"UNKNOWN_ERROR",error);
         }
     }
-    async getUsersByUsername(username: string, userId: string):Promise<ApiResponse>{
+    async getUsersByUsername(username?: string, userId?: string, batch?: number, status?: string): Promise<ApiResponse> {
         try {
-            const regex = new RegExp(`^${username}`, 'i');
-            const users = await this.userModel.find({
-                username: regex,
-                _id: { $ne: userId } 
-            });
-            const data = users.map(user => {
+            const limit = 20;
+            const skip = batch ? batch * limit : 0;
+    
+            let query: any = {
+                _id: { $ne: userId }
+            };
+    
+            if (username) {
+                const regex = new RegExp(`^${username}`, 'i');
+                query.username = regex;
+            }
+    
+            let users = await this.userModel.find(query).skip(skip).limit(limit);
+    
+    
+            let data = users.map(user => {
                 const friendStatus = this.getRandomFriendStatus();
-                const rating=String(Math.floor(Math.random()*100))
+                const rating = String(Math.floor(Math.random() * 100));
                 return plainToInstance(SearchInfoDto, { ...user.toObject(), isFriend: friendStatus, rating: rating }, { excludeExtraneousValues: true });
             });
-            return customResponse('success','OK',data);
+            if (status) {
+                data = data.filter(user => user.isFriend === status);
+            }
+    
+            return customResponse('success', 'OK', data);
         } catch (error) {
-            return customResponse('error',"UNKNOWN_ERROR",error);
+            return customResponse('error', "UNKNOWN_ERROR", error);
         }
     }
     async isValidUsername(username: string):Promise<ApiResponse> {

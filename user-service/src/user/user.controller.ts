@@ -30,9 +30,10 @@ async getUserInfo(@Request() request, @Query('username') username: string ):Prom
     return this.userInfoService.getUserInfo(username, user);
 }
 @Get("searchUsers")
-async getSearchUsers(@Request() request,@Query('username') username: string):Promise<ApiResponse>{
+async getSearchUsers(@Request() request,@Query() query: { username?: string, batch?: number, status?: string }):Promise<ApiResponse>{
+    const {username,batch,status} = query;
     const user = request.user.userId;
-    return this.userInfoService.getUsersByUsername(username, user);
+    return this.userInfoService.getUsersByUsername(username,user,batch,status);
 }
 
 @Get("isValidUsername")
