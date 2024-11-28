@@ -3,12 +3,13 @@ import { UserInfoService } from './user-info/user-info.service';
 import { ChangeInfoService } from './change-info/change-info.service';
 import { UserController } from './user.controller';
 import { JwtModule } from '@nestjs/jwt';
-import { register } from 'module';
 import { ConfigModule } from '@nestjs/config';
 import { ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from 'src/models/user.model';
 import { EmailCode, EmailCodeSchema } from 'src/models/EmailCode.model';
+import { FriendshipService } from './friendship/friendship.service';
+import { Friend, FriendSchema } from 'src/models/friend.model';
 
 @Module({
   imports: [
@@ -20,8 +21,8 @@ import { EmailCode, EmailCodeSchema } from 'src/models/EmailCode.model';
     }),
     inject: [ConfigService],
   }),
-  MongooseModule.forFeature([{ name: User.name, schema: UserSchema },{ name: EmailCode.name, schema: EmailCodeSchema }])],
-  providers: [UserInfoService, ChangeInfoService],
+  MongooseModule.forFeature([{ name: User.name, schema: UserSchema },{ name: EmailCode.name, schema: EmailCodeSchema },{ name: Friend.name, schema: FriendSchema }])],
+  providers: [UserInfoService, ChangeInfoService, FriendshipService],
   controllers: [UserController]
 })
 export class UserModule {}

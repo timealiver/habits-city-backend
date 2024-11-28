@@ -54,12 +54,3 @@ export class User extends Document {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-UserSchema.pre('find', function(next) {
-  this.where({ isDeleted: { $ne: true } });
-  next();
-});
-
-UserSchema.pre('findOne', function(next) {
-  this.where({ isDeleted: { $ne: true } });
-  next();
-});

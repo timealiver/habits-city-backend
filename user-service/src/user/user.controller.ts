@@ -8,6 +8,7 @@ import { ChangeDataDto } from 'src/dto/change-data.dto';
 import { LocalizationInterceptor } from './localization.interceptor';
 import { ApiResponse } from 'src/interfaces/response.interface';
 import { customResponse} from 'src/utils/customResponse.utils';
+import { FriendshipService } from './friendship/friendship.service';
 
 @Controller('user')
 @UseGuards(AuthGuard)
@@ -15,7 +16,8 @@ import { customResponse} from 'src/utils/customResponse.utils';
 export class UserController {
     constructor(
         private readonly userInfoService: UserInfoService, 
-        private readonly changeInfoService: ChangeInfoService
+        private readonly changeInfoService: ChangeInfoService,
+        private readonly friendshipService: FriendshipService
     ) {}
 
 @Get("getInfo")
@@ -80,5 +82,11 @@ async changeData(@Request() request,@Body() changeDataDto: ChangeDataDto): Promi
 async deleteUser(@Request() request){
     const userId = request.user.userId;
     return this.changeInfoService.deleteAccount(userId);
+}
+
+@Post('addFriend')
+async addFriend(@Request() request, @Body('username') username: string ):Promise<ApiResponse>{
+    const userId = request.user.userId;
+    return this.friendshipService.addFriend(userId,username);
 }
 }

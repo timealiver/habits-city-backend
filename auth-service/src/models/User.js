@@ -19,13 +19,4 @@ const User = new Schema({
   isDeleted: { type: Boolean },
   createdAt: { type: Date },
 });
-User.pre('find', function (next) {
-  this.where({ isDeleted: { $ne: true } });
-  next();
-});
-
-User.pre('findOne', function (next) {
-  this.where({ isDeleted: { $ne: true } });
-  next();
-});
 module.exports = model('User', User);
