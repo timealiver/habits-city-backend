@@ -6,12 +6,14 @@ import { FriendStatus } from 'src/dto/friends.enum';
 import { SearchInfoDto } from 'src/dto/search-info.dto';
 import { UserInfoDto } from 'src/dto/user-info.dto';
 import { ApiResponse } from 'src/interfaces/response.interface';
+import { Friend } from 'src/models/friend.model';
 import { User } from 'src/models/user.model';
 import { customResponse } from 'src/utils/customResponse.utils';
 
 @Injectable()
 export class UserInfoService {
-    constructor (@InjectModel(User.name) private userModel: Model<User>){}
+    constructor (@InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Friend.name) private friendModel: Model<Friend>){}
     async getInfo(userId: string):Promise<ApiResponse>{
         try {
             const user = await this.userModel.findOne({_id: userId});
@@ -20,6 +22,7 @@ export class UserInfoService {
             user.googleId!=null?data.isGoogle=true:data.isGoogle=false;
             user.yandexId!=null?data.isYandex=true:data.isYandex=false;
             data.rating=String(Math.floor(Number(data.rating)*Math.random()*10))
+            data.friendsAmount=(await (this.friendModel.find({$and:[{$or:[{userId:userId},{friendId:userId}]},{status:"FRIENDS"}]}))).length;;
             return customResponse('success','OK',data);
         } catch (error) {
             return customResponse('error',"UNKNOWN_ERROR",error);

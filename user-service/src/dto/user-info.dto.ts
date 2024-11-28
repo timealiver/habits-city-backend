@@ -48,4 +48,10 @@ export class UserInfoDto {
   @Expose()
   createdAt: Date;
 
+  @Expose()
+  balance: number;
+
+  @Expose()
+  friendsAmount: number;
+
 }
