@@ -89,4 +89,9 @@ async addFriend(@Request() request, @Body('username') username: string ):Promise
     const userId = request.user.userId;
     return this.friendshipService.addFriend(userId,username);
 }
+@Post('deleteFriend')
+async deleteFriend(@Request() request, @Body('username') username: string ):Promise<ApiResponse>{
+    const userId = request.user.userId;
+    return this.friendshipService.deleteFriend(userId,username);
+}
 }

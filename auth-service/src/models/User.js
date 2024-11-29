@@ -13,9 +13,6 @@ const User = new Schema({
   avatar: { type: String, default: null },
   balance: { type: Number, default: 50 },
   rating: { type: Number, default: 10 },
-  habits: [{ type: Schema.Types.ObjectId, ref: 'Habit', default: null }],
-  subscriptions: [{ type: Schema.Types.ObjectId, ref: 'User', default: null }],
-  subscribers: [{ type: Schema.Types.ObjectId, ref: 'User', default: null }],
   isDeleted: { type: Boolean },
   createdAt: { type: Date },
 });

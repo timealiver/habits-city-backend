@@ -5,7 +5,7 @@ export const MESSAGES = {
         OK:"Operation completed",
         USERNAME_GOOD: "Username can be used",
         FRIEND_REQ_SENT:"Friend request sent",
-        BECAME_FRIENDS:"You became friends"
+        BECAME_FRIENDS:"You became friends",
       },
       error: {
         UNKNOWN_ERROR: "Unknown error",
@@ -25,6 +25,8 @@ export const MESSAGES = {
         LOGGED_IN: "You have successfully logged into your account",
         ALREADY_FRIEND:"You are already friends",
         ALREADY_SENT: "You already sent friend request",
+        NOT_SUB: "You are not subscribed",
+        UNSUBSCRIBED:"You have successfully unsubscribed"
       },
     },
     ru: {
@@ -34,7 +36,8 @@ export const MESSAGES = {
         LOGGED_IN: "Вы успешно вошли в аккаунт",
         USERNAME_GOOD: "Имя пользователя может быть использовано",
         FRIEND_REQ_SENT:"Вы успешно подписались на пользователя",
-        BECAME_FRIENDS:"Вы стали друзьями"
+        BECAME_FRIENDS:"Вы стали друзьями",
+        UNSUBSCRIBED:"Вы успешно отписались"
       },
       error: {
         UNKNOWN_ERROR: "Неизвестная ошибка",
@@ -53,6 +56,7 @@ export const MESSAGES = {
         USERNAME_TAKEN:"Имя пользователя занято",
         ALREADY_FRIEND:"Вы уже друзья",
         ALREADY_SENT: "Вы уже отправляли запрос в друзья",
+        NOT_SUB: "Вы уже отписаны"
 
         
       },
