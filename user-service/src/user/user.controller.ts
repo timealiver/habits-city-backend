@@ -94,4 +94,8 @@ async deleteFriend(@Request() request, @Body('username') username: string ):Prom
     const userId = request.user.userId;
     return this.friendshipService.deleteFriend(userId,username);
 }
+@Get('getFriendStat')
+async getFriendStat(@Query('username') username: string ):Promise<ApiResponse>{
+    return this.friendshipService.getFriendStat(username);
+}
 }

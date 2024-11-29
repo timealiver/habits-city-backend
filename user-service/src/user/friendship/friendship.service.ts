@@ -88,6 +88,57 @@ export class FriendshipService {
             return customResponse("error","UNKNOWN_ERROR",{error: error.toString()})
         }
     }
+    async getFriendStat(username:string){
+        try {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            let datesArray: Date[] = [];
+            const user = await this.userModel.findOne({username:username})
+            for (let i = 1; i <= 30; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() - i);
+            datesArray.push(date);
+            }
+            const formattedDatesArray = datesArray.map(date => {
+                const day = date.getDate();
+                const month = date.toLocaleString('en', { month: 'short' });
+                return `${day} ${month}`;
+            });
+            datesArray=datesArray.reverse();
+            let friendsArray=[];
+            let followersArray=[];
+            let followingArray=[];
+            for (let i = 1; i <= 30; i++) {
+                const userStat = await this.userStatsModel.findOne({userId:user._id,date:datesArray[i-1]});
+                if(!userStat && i!=1){
+                    friendsArray.push(friendsArray[i-2]);
+                    followersArray.push(followersArray[i-2]);
+                    followingArray.push(followingArray[i-2]);
+                } else if(!userStat && i==1){
+                    friendsArray.push(0);
+                    followersArray.push(0);
+                    followingArray.push(0);
+                }else{
+                    friendsArray.push(userStat.friendsAmount);
+                    followersArray.push(userStat.followersAmount);
+                    followingArray.push(userStat.followingAmount);
+                }
+            }
+
+              const resultObject = {
+                labels: formattedDatesArray.reverse(),
+                datasets:{
+                    friends: friendsArray,
+                    followers: followersArray,
+                    following: followingArray
+                }
+              };
+              return customResponse('success',"OK",resultObject)
+
+        } catch (error) {
+            return customResponse("error","UNKNOWN_ERROR",{error: error.toString()})
+        }
+    }
    
   private async updateAmounts(userId:string){
   try {
