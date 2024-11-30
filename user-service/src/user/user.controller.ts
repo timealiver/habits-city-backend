@@ -21,9 +21,12 @@ export class UserController {
     ) {}
 
 @Get("getInfo")
-async getInfo(@Request() request):Promise<ApiResponse>{
+async getInfo(@Headers('X-Locale-Language') locale: string,@Request() request):Promise<ApiResponse>{
     const user = request.user.userId;
-    return this.userInfoService.getInfo(user);
+    if (!locale){
+        locale = 'en';
+    }
+    return this.userInfoService.getInfo(user,locale);
 }
 
 @Get("getUserInfo")
@@ -96,6 +99,9 @@ async deleteFriend(@Request() request, @Body('username') username: string ):Prom
 }
 @Get('getFriendStat')
 async getFriendStat(@Headers('X-Locale-Language') locale: string,@Query('username') username: string ):Promise<ApiResponse>{
+    if (!locale){
+        locale = 'en';
+    }
     return this.friendshipService.getFriendStat(username,locale);
 }
 }

@@ -54,4 +54,7 @@ export class UserInfoDto {
   @Expose()
   friendsAmount: number;
 
+  @Expose()
+  stats:any;
+
 }

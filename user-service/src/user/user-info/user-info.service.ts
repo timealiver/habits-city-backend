@@ -9,12 +9,14 @@ import { ApiResponse } from 'src/interfaces/response.interface';
 import { Friend } from 'src/models/friend.model';
 import { User } from 'src/models/user.model';
 import { customResponse } from 'src/utils/customResponse.utils';
+import { FriendshipService } from '../friendship/friendship.service';
 
 @Injectable()
 export class UserInfoService {
-    constructor (@InjectModel(User.name) private userModel: Model<User>,
+    constructor (private readonly friendshipService: FriendshipService,
+    @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(Friend.name) private friendModel: Model<Friend>){}
-    async getInfo(userId: string):Promise<ApiResponse>{
+    async getInfo(userId: string,locale:string):Promise<ApiResponse>{
         try {
             const user = await this.userModel.findOne({_id: userId});
             console.log(user, userId);
@@ -23,6 +25,7 @@ export class UserInfoService {
             user.yandexId!=null?data.isYandex=true:data.isYandex=false;
             data.rating=String(Math.floor(Number(data.rating)*Math.random()*10))
             data.friendsAmount=(await (this.friendModel.find({$and:[{$or:[{userId:userId},{friendId:userId}]},{status:"FRIENDS"}]}))).length;;
+            data.stats=await this.friendshipService.getFriendStat(user.username,locale);
             return customResponse('success','OK',data);
         } catch (error) {
             return customResponse('error',"UNKNOWN_ERROR",error);
@@ -30,33 +33,87 @@ export class UserInfoService {
     }
     async getUsersByUsername(username?: string, userId?: string, batch?: number, status?: string): Promise<ApiResponse> {
         try {
-            const limit = 20;
-            const skip = batch ? batch * limit : 0;
+          const limit = 20;
+          const skip = batch ? batch * limit : 0;
     
+          if (status) {
+            let friendStatuses;
+            if (status=="FOLLOWING"){
+                friendStatuses = await this.friendModel.find({
+                    $or: [
+                      { userId: userId, status: status },
+                      { friendId: userId, status: "FOLLOWED" }
+                    ]
+                  }).skip(skip).limit(limit);
+            } else if(status=="FOLLOWED"){
+                friendStatuses = await this.friendModel.find({
+                    $or: [
+                      { userId: userId, status: status },
+                      { friendId: userId, status: "FOLLOWING" }
+                    ]
+                  }).skip(skip).limit(limit); 
+            } else{
+                friendStatuses = await this.friendModel.find({
+                    $or: [
+                      { userId: userId, status: status },
+                      { friendId: userId, status: status }
+                    ]
+                  }).skip(skip).limit(limit);  
+            }
+    
+            const friendIds = friendStatuses.map(friend => friend.userId === userId ? friend.friendId : friend.userId);
+            const users = await this.userModel.find({ _id: { $in: friendIds } });
+    
+    
+            let data = users.map(user => {
+              const friendStatus = status ; // Если статус не найден, считаем, что это не друг
+              const rating = String(Math.floor(Math.random() * 100));
+              return plainToInstance(SearchInfoDto, { ...user.toObject(), isFriend: friendStatus, rating: rating }, { excludeExtraneousValues: true });
+            });
+    
+            return customResponse('success', 'OK', data);
+          } else {
+            // Логика для случая, когда status не указан
             let query: any = {
-                _id: { $ne: userId }
+              _id: { $ne: userId }
             };
     
             if (username) {
-                const regex = new RegExp(`^${username}`, 'i');
-                query.username = regex;
+              const regex = new RegExp(`^${username}`, 'i');
+              query.username = regex;
             }
     
             let users = await this.userModel.find(query).skip(skip).limit(limit);
     
+            // Получаем статусы дружбы для всех найденных пользователей
+            const userIds = users.map(user => user._id.toString());
+            const friendStatuses = await this.friendModel.find({
+              $or: [
+                { userId: userId, friendId: { $in: userIds } },
+                { userId: { $in: userIds }, friendId: userId }
+              ]
+            });
+    
+            // Преобразуем статусы дружбы в объект для быстрого доступа
+            const friendStatusMap: { [key: string]: string } = friendStatuses.reduce((map, friend) => {
+              if (friend.userId === userId) {
+                map[friend.friendId.toString()] = friend.status;
+              } else {
+                map[friend.userId.toString()] = friend.status;
+              }
+              return map;
+            }, {});
     
             let data = users.map(user => {
-                const friendStatus = this.getRandomFriendStatus();
-                const rating = String(Math.floor(Math.random() * 100));
-                return plainToInstance(SearchInfoDto, { ...user.toObject(), isFriend: friendStatus, rating: rating }, { excludeExtraneousValues: true });
+              const friendStatus = friendStatusMap[user._id.toString()] || 'not_friend'; // Если статус не найден, считаем, что это не друг
+              const rating = String(Math.floor(Math.random() * 100));
+              return plainToInstance(SearchInfoDto, { ...user.toObject(), isFriend: friendStatus, rating: rating }, { excludeExtraneousValues: true });
             });
-            if (status) {
-                data = data.filter(user => user.isFriend === status);
-            }
     
             return customResponse('success', 'OK', data);
+          }
         } catch (error) {
-            return customResponse('error', "UNKNOWN_ERROR", error);
+          return customResponse('error', "UNKNOWN_ERROR", error);
         }
     }
     async isValidUsername(username: string):Promise<ApiResponse> {
