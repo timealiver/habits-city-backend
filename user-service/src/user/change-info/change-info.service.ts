@@ -13,13 +13,17 @@ import { emailTemplate } from 'src/utils/emailTemplate';
 import { ChangeDataDto } from 'src/dto/change-data.dto';
 import { customResponse } from 'src/utils/customResponse.utils';
 import { Habit } from 'src/models/habit.model';
+import { Feedback } from 'src/models/feedback.model';
 
 
 @Injectable()
 export class ChangeInfoService {
     private s3: AWS.S3;
     private transporter;
-    constructor (@InjectModel(User.name) private userModel: Model<User>, @InjectModel(EmailCode.name) private emailCodeModel: Model<EmailCode>,  @InjectConnection() private readonly connection: mongoose.Connection){
+    constructor (@InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(EmailCode.name) private emailCodeModel: Model<EmailCode>,
+    @InjectModel(Feedback.name) private feedbackModel: Model<Feedback>,
+    @InjectConnection() private readonly connection: mongoose.Connection){
         AWS.config.update({
             accessKeyId: process.env.AWS_ACCESS_KEY_ID,
             secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -200,7 +204,21 @@ export class ChangeInfoService {
         return customResponse('error',"UNKNOWN_ERROR",error)
       }
     }
-    async sendFeedback(){};
+    async sendFeedback(userId:string, username: string, topic: string,content: string,systemInfo: any){
+      if(!topic || !content || !systemInfo){
+        return customResponse('error','INVALID_DATA');
+      }
+      const feedback = new this.feedbackModel({
+        username: username,
+        topic: topic,
+        content: content,
+        systemInfo: systemInfo
+      })
+      await feedback.save();
+      const user = await  this.userModel.findOne({_id:userId});
+      user.balance=user.balance+Math.floor(Math.random() * 100);
+      return customResponse('success',"OK");
+    };
     async deleteAccount(userId:string){
       const session = await this.connection.startSession();
       try {

@@ -34,7 +34,7 @@ export class UserInfoService {
     }
     async getUsersByUsername(username?: string, userId?: string, batch?: number, status?: string): Promise<ApiResponse> {
         try {
-          const limit = 20;
+          const limit = 50;
           const skip = batch ? batch * limit : 0;
     
           if (status) {

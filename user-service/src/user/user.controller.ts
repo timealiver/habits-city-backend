@@ -9,6 +9,8 @@ import { LocalizationInterceptor } from './localization.interceptor';
 import { ApiResponse } from 'src/interfaces/response.interface';
 import { customResponse} from 'src/utils/customResponse.utils';
 import { FriendshipService } from './friendship/friendship.service';
+import { FeedbackDto } from 'src/dto/feedback.dto';
+import { request } from 'http';
 
 @Controller('user')
 @UseGuards(AuthGuard)
@@ -103,5 +105,11 @@ async getFriendStat(@Headers('X-Locale-Language') locale: string,@Query('usernam
         locale = 'en';
     }
     return this.friendshipService.getFriendStat(username,locale);
+}
+@Post('sendFeedback')
+async sendFeedback(@Request() request,@Body() feedbackDto: FeedbackDto){
+    const userId = request.user.userId;
+    const {username,topic,content,systemInfo} = feedbackDto;
+    return this.changeInfoService.sendFeedback(userId,username,topic,content,systemInfo);
 }
 }

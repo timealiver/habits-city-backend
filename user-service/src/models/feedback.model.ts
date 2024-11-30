@@ -1,8 +1,8 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document} from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 
 @Schema({collection: "feedbacks"})
-export class Friend extends Document {
+export class Feedback extends Document {
   @Prop()
   username: string;
 
@@ -12,8 +12,11 @@ export class Friend extends Document {
   @Prop()
   content: string;
 
-  @Prop ()
-  systemInfo: any;
+  @Prop({ type: Object })
+  systemInfo: Object;
+
+  @Prop()
+  userId: string;
 }
 
-export const FriendSchema = SchemaFactory.createForClass(Friend);
+export const FeedbackSchema = SchemaFactory.createForClass(Feedback);

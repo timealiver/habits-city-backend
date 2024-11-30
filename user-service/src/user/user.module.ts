@@ -11,6 +11,7 @@ import { EmailCode, EmailCodeSchema } from 'src/models/EmailCode.model';
 import { FriendshipService } from './friendship/friendship.service';
 import { Friend, FriendSchema } from 'src/models/friend.model';
 import { UserStats, UserStatsSchema } from 'src/models/userStats.model';
+import { Feedback, FeedbackSchema } from 'src/models/feedback.model';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { UserStats, UserStatsSchema } from 'src/models/userStats.model';
   MongooseModule.forFeature([{ name: User.name, schema: UserSchema },
     { name: EmailCode.name, schema: EmailCodeSchema },
     { name: Friend.name, schema: FriendSchema },
-    { name: UserStats.name, schema: UserStatsSchema }
+    { name: UserStats.name, schema: UserStatsSchema },
+    { name: Feedback.name, schema: FeedbackSchema}
   ])],
   providers: [UserInfoService, ChangeInfoService, FriendshipService],
   controllers: [UserController]
