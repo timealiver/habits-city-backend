@@ -55,6 +55,10 @@ export class UserInfoDto {
   friendsAmount: number;
 
   @Expose()
+  refLink: string;
+  
+  @Expose()
   stats:any;
+  
 
 }

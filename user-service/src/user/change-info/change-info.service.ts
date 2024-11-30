@@ -200,6 +200,7 @@ export class ChangeInfoService {
         return customResponse('error',"UNKNOWN_ERROR",error)
       }
     }
+    async sendFeedback(){};
     async deleteAccount(userId:string){
       const session = await this.connection.startSession();
       try {

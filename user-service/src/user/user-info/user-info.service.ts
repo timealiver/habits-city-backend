@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { plainToInstance } from 'class-transformer';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { FriendStatus } from 'src/dto/friends.enum';
 import { SearchInfoDto } from 'src/dto/search-info.dto';
 import { UserInfoDto } from 'src/dto/user-info.dto';
@@ -26,6 +26,7 @@ export class UserInfoService {
             data.rating=String(Math.floor(Number(data.rating)*Math.random()*10))
             data.friendsAmount=(await (this.friendModel.find({$and:[{$or:[{userId:userId},{friendId:userId}]},{status:"FRIENDS"}]}))).length;;
             data.stats=await this.friendshipService.getFriendStat(user.username,locale);
+            data.refLink='https://molsrg-habits-city-frontend-ab3a.twc1.net/?referralId=49248930203&сode=1919218382'
             return customResponse('success','OK',data);
         } catch (error) {
             return customResponse('error',"UNKNOWN_ERROR",error);
@@ -38,35 +39,76 @@ export class UserInfoService {
     
           if (status) {
             let friendStatuses;
-            if (status=="FOLLOWING"){
+            if (status==="FOLLOWING"){
                 friendStatuses = await this.friendModel.find({
                     $or: [
                       { userId: userId, status: status },
                       { friendId: userId, status: "FOLLOWED" }
                     ]
-                  }).skip(skip).limit(limit);
-            } else if(status=="FOLLOWED"){
+                  })
+            } else if(status==="FOLLOWED"){
                 friendStatuses = await this.friendModel.find({
                     $or: [
                       { userId: userId, status: status },
                       { friendId: userId, status: "FOLLOWING" }
                     ]
-                  }).skip(skip).limit(limit); 
-            } else{
+                  })
+            } else if(status==='NOT_FOLLOWING'){
+                const connectedUserIds = await this.friendModel.find({
+                    $or: [
+                      { userId: userId },
+                      { friendId: userId }
+                    ]
+                  }).distinct('userId').exec();
+          
+                  const connectedFriendIds = await this.friendModel.find({
+                    $or: [
+                      { userId: userId },
+                      { friendId: userId }
+                    ]
+                  }).distinct('friendId').exec();
+          
+                  const allConnectedIds = new Set([...connectedUserIds, ...connectedFriendIds, userId]);
+          
+                  const query: any = {
+                    _id: { $nin: Array.from(allConnectedIds) }
+                  };
+          
+                  if (username) {
+                    const regex = new RegExp(`^${username}`, 'i');
+                    query.username = regex;
+                  }
+          
+                  const users = await this.userModel.find(query).skip(skip).limit(limit);
+          
+                  let data = users.map(user => {
+                    const friendStatus = status; // Если статус не найден, считаем, что это не друг
+                    const rating = String(Math.floor(Math.random() * 100));
+                    return plainToInstance(SearchInfoDto, { ...user.toObject(), isFriend: friendStatus, rating: rating }, { excludeExtraneousValues: true });
+                  });
+          
+                  return customResponse('success', 'OK', data);
+                }
+            else {
                 friendStatuses = await this.friendModel.find({
                     $or: [
                       { userId: userId, status: status },
                       { friendId: userId, status: status }
                     ]
-                  }).skip(skip).limit(limit);  
+                  });  
             }
-    
             const friendIds = friendStatuses.map(friend => friend.userId === userId ? friend.friendId : friend.userId);
-            const users = await this.userModel.find({ _id: { $in: friendIds } });
-    
-    
+            const query: any = {
+                _id: { $in: friendIds }
+              };
+      
+              if (username) {
+                const regex = new RegExp(`^${username}`, 'i');
+                query.username = regex;
+              }
+            const users = await this.userModel.find(query).skip(skip).limit(limit);
             let data = users.map(user => {
-              const friendStatus = status ; // Если статус не найден, считаем, что это не друг
+              const friendStatus = status ; 
               const rating = String(Math.floor(Math.random() * 100));
               return plainToInstance(SearchInfoDto, { ...user.toObject(), isFriend: friendStatus, rating: rating }, { excludeExtraneousValues: true });
             });
@@ -105,7 +147,7 @@ export class UserInfoService {
             }, {});
     
             let data = users.map(user => {
-              const friendStatus = friendStatusMap[user._id.toString()] || 'not_friend'; // Если статус не найден, считаем, что это не друг
+              const friendStatus = friendStatusMap[user._id.toString()] || 'NOT_FOLLOWING'; // Если статус не найден, считаем, что это не друг
               const rating = String(Math.floor(Math.random() * 100));
               return plainToInstance(SearchInfoDto, { ...user.toObject(), isFriend: friendStatus, rating: rating }, { excludeExtraneousValues: true });
             });
