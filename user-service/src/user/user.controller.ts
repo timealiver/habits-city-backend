@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Request, Query, UseInterceptors, Post, UploadedFile, Body, ValidationPipe, Delete, Patch } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Query, UseInterceptors, Post, UploadedFile, Body, ValidationPipe, Delete, Patch,Headers } from '@nestjs/common';
 import { AuthGuard } from './auth.guard';
 import { UserInfoService } from './user-info/user-info.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -95,7 +95,7 @@ async deleteFriend(@Request() request, @Body('username') username: string ):Prom
     return this.friendshipService.deleteFriend(userId,username);
 }
 @Get('getFriendStat')
-async getFriendStat(@Query('username') username: string ):Promise<ApiResponse>{
-    return this.friendshipService.getFriendStat(username);
+async getFriendStat(@Headers('X-Locale-Language') locale: string,@Query('username') username: string ):Promise<ApiResponse>{
+    return this.friendshipService.getFriendStat(username,locale);
 }
 }
