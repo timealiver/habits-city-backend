@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
 import * as nodemailer from 'nodemailer';
 import { SentMessageInfo } from 'nodemailer';
-import { EmailCode } from 'src/models/EmailCode.model';
+import { EmailCode } from 'src/models/emailCode.model';
 import { emailTemplate } from 'src/utils/emailTemplate';
 import { ChangeDataDto } from 'src/dto/change-data.dto';
 import { customResponse } from 'src/utils/customResponse.utils';

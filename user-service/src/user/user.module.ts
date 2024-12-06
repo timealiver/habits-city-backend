@@ -7,7 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from 'src/models/user.model';
-import { EmailCode, EmailCodeSchema } from 'src/models/EmailCode.model';
+import { EmailCode, EmailCodeSchema } from 'src/models/emailCode.model';
 import { FriendshipService } from './friendship/friendship.service';
 import { Friend, FriendSchema } from 'src/models/friend.model';
 import { UserStats, UserStatsSchema } from 'src/models/userStats.model';
